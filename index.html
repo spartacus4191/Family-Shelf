@@ -388,30 +388,32 @@
   </section>
 
   <section>
-    <div class="section-title">📸 Your photo</div>
+    <div class="section-title">👤 My Profile</div>
     <div class="card">
-      <div class="field">
-        <label for="photoName">Reader</label>
-        <input id="photoName" list="nameList" placeholder="e.g. Mom, Sam, Grandpa..." autocomplete="off">
-      </div>
       <div class="photo-preview">
-        <div class="avatar" id="photoPreview">?</div>
+        <div class="avatar" id="profilePreview">?</div>
         <div style="flex:1;">
-          <input id="photoFile" type="file" accept="image/*">
+          <input id="profileFile" type="file" accept="image/*">
         </div>
       </div>
-      <button id="photoBtn">Save photo</button>
-      <div class="msg" id="photoMsg"></div>
+      <div class="field">
+        <label for="profileName">Display name <span class="opt">(shown on the leaderboard)</span></label>
+        <input id="profileName" placeholder="e.g. Mom, Sam, Grandpa..." autocomplete="off">
+      </div>
+      <button id="profileBtn">Save profile</button>
+      <div class="msg" id="profileMsg"></div>
     </div>
   </section>
 
   <section>
     <div class="section-title">✍️ Update your progress</div>
     <div class="card">
+      <div class="field" id="editingBanner" style="display:none;background:rgba(217,164,65,0.12);border:1px solid var(--gold);border-radius:8px;padding:10px 12px;">
+        ✏️ Editing an existing entry. <button id="cancelEditBtn" style="width:auto;background:none;border:none;color:var(--gold);text-decoration:underline;padding:0;font-size:0.85rem;cursor:pointer;">Cancel</button>
+      </div>
       <div class="field">
-        <label for="name">Reader</label>
-        <input id="name" list="nameList" placeholder="e.g. Mom, Sam, Grandpa..." autocomplete="off">
-        <datalist id="nameList"></datalist>
+        <label>Logging as</label>
+        <div id="loggingAsLine" style="padding:11px 12px;background:var(--ink);border-radius:8px;border:1px solid rgba(244,235,217,0.1);font-weight:600;">—</div>
       </div>
       <div class="field">
         <label for="title">Book title <span class="opt">(same title = same book, progress updates)</span></label>
@@ -489,7 +491,8 @@ const MILESTONES = [
   {p:100, badge:'🔖'}
 ];
 let books = [];
-let photos = {};
+let profiles = {};
+let currentUser = null;
 let stakes = [];
 let covers = {};
 let streaks = {};
@@ -516,18 +519,22 @@ function timeAgo(iso){
   const h = Math.floor(m/60); if(h < 24) return h+'h ago';
   return Math.floor(h/24)+'d ago';
 }
-function avatarHtml(name){
-  const key = name.trim().toLowerCase();
-  if(photos[key]) return `<img src="${photos[key]}" alt="${escapeHtml(name)}">`;
-  return initials(name);
+function avatarHtml(uid, fallbackName){
+  const p = profiles[uid];
+  if(p && p.photoURL) return `<img src="${p.photoURL}" alt="${escapeHtml(resolveName(uid, fallbackName))}">`;
+  return initials(resolveName(uid, fallbackName));
 }
-function avatarStyleBg(name){
-  const key = name.trim().toLowerCase();
-  return photos[key] ? 'transparent' : colorFor(name);
+function avatarStyleBg(uid, fallbackName){
+  const p = profiles[uid];
+  return (p && p.photoURL) ? 'transparent' : colorFor(resolveName(uid, fallbackName));
+}
+function resolveName(uid, fallbackName){
+  const p = profiles[uid];
+  return (p && p.displayName) ? p.displayName : (fallbackName || 'Reader');
 }
 function byPerson(){
   const map = {};
-  for(const b of books){ if(!map[b.name]) map[b.name] = []; map[b.name].push(b); }
+  for(const b of books){ if(!map[b.uid]) map[b.uid] = []; map[b.uid].push(b); }
   return map;
 }
 
@@ -591,31 +598,31 @@ function monthlyPagesByPerson(){
   const map = {};
   for(const h of history){
     if(!h.timestamp || !h.timestamp.startsWith(ym)) continue;
-    map[h.name] = (map[h.name]||0) + h.delta;
+    map[h.uid] = (map[h.uid]||0) + h.delta;
   }
   return map;
 }
 
 function render(prevIds){
   const grouped = byPerson();
-  const people = Object.keys(grouped);
+  const uids = Object.keys(grouped);
   const finishedCount = books.filter(b=>b.finished).length;
   const totalPagesRead = books.reduce((s,b)=>s+b.pagesRead,0);
 
   document.getElementById('totBooks').textContent = finishedCount;
   document.getElementById('totPages').textContent = totalPagesRead.toLocaleString();
-  document.getElementById('totReaders').textContent = people.length;
-  document.getElementById('nameList').innerHTML = people.map(p=>`<option value="${escapeHtml(p)}">`).join('');
+  document.getElementById('totReaders').textContent = uids.length;
   const titles = [...new Set(books.map(b=>b.title))];
   document.getElementById('titleList').innerHTML = titles.map(t=>`<option value="${escapeHtml(t)}">`).join('');
 
   const monthly = monthlyPagesByPerson();
-  const stats = people.map(name=>{
-    const list = grouped[name];
+  const stats = uids.map(uid=>{
+    const list = grouped[uid];
+    const name = resolveName(uid, list[0] && list[0].name);
     const pages = list.reduce((s,b)=>s+b.pagesRead,0);
     const finished = list.filter(b=>b.finished).length;
-    const streak = streaks[name.trim().toLowerCase()];
-    return {name, pages, finished, monthPages: monthly[name] || 0, streakCount: streak ? streak.count : 0};
+    const streak = streaks[uid];
+    return {uid, name, pages, finished, monthPages: monthly[uid] || 0, streakCount: streak ? streak.count : 0};
   }).sort((a,b)=>b.pages - a.pages);
 
   const podiumEl = document.getElementById('podium');
@@ -626,13 +633,13 @@ function render(prevIds){
     podiumEl.innerHTML = order.map(i=>{
       const s = stats[i]; const cls = classNames[i];
       const crown = i===0 ? '<div class="p-crown">👑</div>' : '';
-      const key = s.name.trim().toLowerCase();
+      const p = profiles[s.uid];
       return `
       <div class="podium-slot ${cls}">
         <div class="p-avatar-wrap">
           ${crown}
-          ${photos[key]
-            ? `<img class="p-avatar" src="${photos[key]}" alt="${escapeHtml(s.name)}">`
+          ${p && p.photoURL
+            ? `<img class="p-avatar" src="${p.photoURL}" alt="${escapeHtml(s.name)}">`
             : `<div class="p-avatar-fallback" style="background:${colorFor(s.name)};width:100%;height:100%;">${initials(s.name)}</div>`}
         </div>
         <div class="p-rank">#${i+1}</div>
@@ -661,7 +668,7 @@ function render(prevIds){
       return `
       <div class="row ${i===0?'lead':''}">
         <div class="rank-badge ${rankCls}">${i+1}</div>
-        <div class="avatar" style="background:${avatarStyleBg(s.name)}">${avatarHtml(s.name)}</div>
+        <div class="avatar" style="background:${avatarStyleBg(s.uid, s.name)}">${avatarHtml(s.uid, s.name)}</div>
         <div class="who">
           <div class="name">${escapeHtml(s.name)} ${i===0?'👑':''} ${s.streakCount>1?`<span class="streak">🔥${s.streakCount}</span>`:''} <span class="badges">${badge?`<span class="badge">${badge}</span>`:''}</span></div>
           <div class="sub">${s.finished} books · ${s.pages.toLocaleString()} pages all-time</div>
@@ -681,12 +688,12 @@ function render(prevIds){
   if(!leader || stakes.length === 0){
     stakesEl.innerHTML = `<div class="empty-note" style="width:100%;">${stakes.length===0 ? 'Add a stake below (like picks the restaurant) and whoever is leading gets it.' : 'No progress logged yet.'}</div>`;
   } else {
-    const key = leader.name.trim().toLowerCase();
+    const p = profiles[leader.uid];
     stakesEl.innerHTML = stakes.map((stake, idx)=>`
       <div class="stake-card">
         <button class="stake-remove" data-idx="${idx}" title="Remove this stake">✕</button>
-        ${photos[key]
-          ? `<img class="stake-avatar" src="${photos[key]}" alt="${escapeHtml(leader.name)}">`
+        ${p && p.photoURL
+          ? `<img class="stake-avatar" src="${p.photoURL}" alt="${escapeHtml(leader.name)}">`
           : `<div class="stake-avatar-fallback" style="background:${colorFor(leader.name)}">${initials(leader.name)}</div>`}
         <div class="stake-lead">${escapeHtml(leader.name)} is leading!</div>
         <div class="stake-text">${escapeHtml(stake)}</div>
@@ -711,7 +718,7 @@ function render(prevIds){
       return `
       <div class="reading-card ${changed?'flash':''}" data-id="${b.id}">
         <div class="reading-top">
-          <div><span class="reading-who">${escapeHtml(b.name)}</span> <span class="reading-book">— ${escapeHtml(b.title)}</span></div>
+          <div><span class="reading-who">${escapeHtml(resolveName(b.uid, b.name))}</span> <span class="reading-book">— ${escapeHtml(b.title)}</span></div>
           <div class="reading-ago">${timeAgo(b.updatedAt)}</div>
         </div>
         <div class="progress-track"><div class="progress-fill" style="width:${pct!==null?pct:Math.min(100, b.pagesRead/5)}%;background:${colorFor(b.title)}"></div></div>
@@ -724,11 +731,11 @@ function render(prevIds){
   }
 
   const shelvesEl = document.getElementById('shelves');
-  if(people.length === 0){
+  if(uids.length === 0){
     shelvesEl.innerHTML = `<div class="card" style="text-align:center;color:var(--parchment-2);opacity:0.5;font-style:italic;">The shelf is empty. Update progress below to start filling it in.</div>`;
   } else {
     shelvesEl.innerHTML = stats.map(s=>{
-      const list = grouped[s.name];
+      const list = grouped[s.uid];
       const spines = list.map(b=>{
         const basis = b.totalPages || b.pagesRead;
         const h = Math.max(34, Math.min(72, 30 + basis/12));
@@ -762,11 +769,11 @@ function render(prevIds){
     manageEl.innerHTML = sorted.map(b=>`
       <div class="manage-row">
         <div class="manage-info">
-          <b>${escapeHtml(b.name)}</b> — ${escapeHtml(b.title)}
+          <b>${escapeHtml(resolveName(b.uid, b.name))}</b> — ${escapeHtml(b.title)}
           <span>page ${b.pagesRead}${b.totalPages?'/'+b.totalPages:''} · ${b.finished?'finished':'reading'}</span>
         </div>
         <div class="manage-actions">
-          <button class="btn-edit" data-id="${b.id}">Edit</button>
+          ${b.uid === (currentUser && currentUser.uid) ? `<button class="btn-edit" data-id="${b.id}">Edit</button>` : ''}
           <button class="btn-delete" data-id="${b.id}">Delete</button>
         </div>
       </div>`).join('');
@@ -776,11 +783,11 @@ function render(prevIds){
         const b = books.find(x=>x.id === btn.dataset.id);
         if(!b) return;
         editingId = b.id;
-        document.getElementById('name').value = b.name;
+        setEditingBanner();
         document.getElementById('title').value = b.title;
         document.getElementById('current').value = b.pagesRead;
         document.getElementById('total').value = b.totalPages || '';
-        document.getElementById('name').scrollIntoView({behavior:'smooth', block:'center'});
+        document.getElementById('title').scrollIntoView({behavior:'smooth', block:'center'});
         document.getElementById('msg').style.color = 'var(--sage)';
         document.getElementById('msg').textContent = 'Editing — adjust the details and hit Update.';
       });
@@ -788,12 +795,16 @@ function render(prevIds){
     manageEl.querySelectorAll('.btn-delete').forEach(btn=>{
       btn.addEventListener('click', async ()=>{
         if(!confirm('Delete this entry? This cannot be undone.')) return;
-        if(editingId === btn.dataset.id) editingId = null;
+        if(editingId === btn.dataset.id){ editingId = null; setEditingBanner(); }
         books = books.filter(x=>x.id !== btn.dataset.id);
         await db.ref('books').set(JSON.stringify(books));
       });
     });
   }
+}
+
+function setEditingBanner(){
+  document.getElementById('editingBanner').style.display = editingId ? 'block' : 'none';
 }
 
 function resizeImageFile(file){
@@ -820,61 +831,77 @@ function resizeImageFile(file){
   });
 }
 
-document.getElementById('photoName').addEventListener('input', (e)=>{
-  const key = e.target.value.trim().toLowerCase();
-  const preview = document.getElementById('photoPreview');
-  if(photos[key]){
+function renderProfilePreview(){
+  const preview = document.getElementById('profilePreview');
+  if(!currentUser) return;
+  const p = profiles[currentUser.uid];
+  const name = (p && p.displayName) || currentUser.displayName || 'Reader';
+  document.getElementById('profileName').value = name;
+  if(p && p.photoURL){
     preview.style.background = 'transparent';
-    preview.innerHTML = `<img src="${photos[key]}" alt="">`;
+    preview.innerHTML = `<img src="${p.photoURL}" alt="">`;
   } else {
-    preview.style.background = e.target.value.trim() ? colorFor(e.target.value.trim()) : 'var(--ink)';
-    preview.innerHTML = e.target.value.trim() ? initials(e.target.value.trim()) : '?';
+    preview.style.background = colorFor(name);
+    preview.innerHTML = initials(name);
   }
-});
+  document.getElementById('loggingAsLine').textContent = name;
 
-document.getElementById('photoBtn').addEventListener('click', async ()=>{
-  const nameEl = document.getElementById('photoName');
-  const fileEl = document.getElementById('photoFile');
-  const msg = document.getElementById('photoMsg');
+  const whoami = document.getElementById('whoami');
+  if(whoami.querySelector('#signOutBtn')){
+    whoami.firstChild.textContent = `Signed in as ${name} · `;
+  }
+}
+
+document.getElementById('profileBtn').addEventListener('click', async ()=>{
+  const msg = document.getElementById('profileMsg');
+  if(!isConfigured || !currentUser){ msg.style.color='var(--brick)'; msg.textContent = 'Sign in first.'; return; }
+
+  const nameEl = document.getElementById('profileName');
+  const fileEl = document.getElementById('profileFile');
   const name = nameEl.value.trim();
+  if(!name){ msg.style.color = 'var(--brick)'; msg.textContent = 'Enter a display name.'; return; }
 
-  if(!isConfigured){ msg.style.color='var(--brick)'; msg.textContent = 'Firebase not configured yet — see the banner above.'; return; }
-  if(!name){ msg.style.color = 'var(--brick)'; msg.textContent = 'Enter a reader name first.'; return; }
-  if(!fileEl.files || !fileEl.files[0]){ msg.style.color = 'var(--brick)'; msg.textContent = 'Choose a photo to upload.'; return; }
-
-  const btn = document.getElementById('photoBtn');
+  const btn = document.getElementById('profileBtn');
   btn.disabled = true; btn.textContent = 'Saving...';
 
   try{
-    const dataUrl = await resizeImageFile(fileEl.files[0]);
-    photos[name.toLowerCase()] = dataUrl;
-    await db.ref('photos').set(JSON.stringify(photos));
+    const existing = profiles[currentUser.uid] || {};
+    let photoURL = existing.photoURL || '';
+    if(fileEl.files && fileEl.files[0]){
+      photoURL = await resizeImageFile(fileEl.files[0]);
+    }
+    const updated = { displayName: name, photoURL, updatedAt: new Date().toISOString() };
+    await db.ref('profiles/'+currentUser.uid).set(updated);
+    profiles[currentUser.uid] = updated;
     msg.style.color = 'var(--sage)';
-    msg.textContent = `Saved ${name}'s photo.`;
+    msg.textContent = 'Profile saved.';
     fileEl.value = '';
+    renderProfilePreview();
+    render(null);
   }catch(e){
     msg.style.color = 'var(--brick)';
     msg.textContent = "Couldn't save — check your connection and try again.";
   }
-  btn.disabled = false; btn.textContent = 'Save photo';
+  btn.disabled = false; btn.textContent = 'Save profile';
 });
 
 document.getElementById('addBtn').addEventListener('click', async ()=>{
-  const nameEl = document.getElementById('name');
   const titleEl = document.getElementById('title');
   const currentEl = document.getElementById('current');
   const totalEl = document.getElementById('total');
   const msg = document.getElementById('msg');
 
   if(!isConfigured){ msg.style.color='var(--brick)'; msg.textContent = 'Firebase not configured yet — see the banner above.'; return; }
+  if(!currentUser){ msg.style.color='var(--brick)'; msg.textContent = 'Sign in first.'; return; }
 
-  const name = nameEl.value.trim();
+  const uid = currentUser.uid;
+  const name = resolveName(uid, currentUser.displayName);
   const title = titleEl.value.trim();
   const current = parseInt(currentEl.value, 10);
   const total = totalEl.value ? parseInt(totalEl.value, 10) : null;
 
-  if(!name || !title || !current || current <= 0){
-    msg.style.color = 'var(--brick)'; msg.textContent = 'Fill in a reader, book title, and current page.'; return;
+  if(!title || !current || current <= 0){
+    msg.style.color = 'var(--brick)'; msg.textContent = 'Fill in a book title and current page.'; return;
   }
   if(total && current > total){
     msg.style.color = 'var(--brick)'; msg.textContent = "Current page can't be past the total."; return;
@@ -889,21 +916,20 @@ document.getElementById('addBtn').addEventListener('click', async ()=>{
   // Firebase confirms the write.
   const updatedBooks = books.map(b => ({...b}));
   const now = new Date().toISOString();
-  const key = (n,t)=> n.toLowerCase()+'|'+t.toLowerCase();
+  const key = (u,t)=> u+'|'+t.toLowerCase();
 
   // If this came from "Edit" in Manage Entries, target that exact book by ID
   // so we update it even if it's already finished — otherwise fall back to
-  // matching an in-progress book with the same reader + title.
-  let target = editingId ? updatedBooks.find(b => b.id === editingId) : null;
+  // matching an in-progress book with the same reader (by uid) + title.
+  let target = editingId ? updatedBooks.find(b => b.id === editingId && b.uid === uid) : null;
   if(!target){
-    target = updatedBooks.find(b => !b.finished && key(b.name,b.title) === key(name,title));
+    target = updatedBooks.find(b => !b.finished && key(b.uid,b.title) === key(uid,title));
   }
 
   const prevPages = target ? target.pagesRead : 0;
   const delta = Math.max(0, current - prevPages);
 
   if(target){
-    target.name = name;
     target.title = title;
     target.pagesRead = current;
     if(total) target.totalPages = total;
@@ -912,31 +938,40 @@ document.getElementById('addBtn').addEventListener('click', async ()=>{
   } else {
     target = {
       id: Date.now()+'-'+Math.random().toString(36).slice(2),
-      name, title, pagesRead: current, totalPages: total,
+      uid, name, title, pagesRead: current, totalPages: total,
       finished: total ? current >= total : false,
       createdAt: now, updatedAt: now
     };
     updatedBooks.push(target);
   }
 
-  const nameKey = name.trim().toLowerCase();
-  if(delta > 0) updateStreak(nameKey);
+  if(delta > 0) updateStreak(uid);
 
   try{
     await db.ref('books').set(JSON.stringify(updatedBooks));
     if(delta > 0){
-      await db.ref('history').push({ name, title, delta, timestamp: now });
+      await db.ref('history').push({ uid, name, title, delta, timestamp: now });
       await db.ref('streaks').set(JSON.stringify(streaks));
     }
     msg.style.color = 'var(--sage)';
     msg.textContent = target.finished ? `🎉 ${name} finished "${title}"!` : `Updated ${name}'s progress in "${title}".`;
     currentEl.value = '';
     editingId = null;
+    setEditingBanner();
   }catch(e){
     msg.style.color = 'var(--brick)';
     msg.textContent = "Couldn't save — check your connection and try again.";
   }
   btn.disabled = false; btn.textContent = 'Update my progress';
+});
+
+document.getElementById('cancelEditBtn').addEventListener('click', ()=>{
+  editingId = null;
+  setEditingBanner();
+  document.getElementById('title').value = '';
+  document.getElementById('current').value = '';
+  document.getElementById('total').value = '';
+  document.getElementById('msg').textContent = '';
 });
 
 document.getElementById('addStakeBtn').addEventListener('click', async ()=>{
@@ -981,7 +1016,7 @@ document.getElementById('periodMonthBtn').addEventListener('click', ()=>{
 document.getElementById('exportBtn').addEventListener('click', ()=>{
   const rows = [['Reader','Title','Pages Read','Total Pages','Finished','Last Updated']];
   for(const b of books){
-    rows.push([b.name, b.title, b.pagesRead, b.totalPages||'', b.finished?'Yes':'No', b.updatedAt]);
+    rows.push([resolveName(b.uid, b.name), b.title, b.pagesRead, b.totalPages||'', b.finished?'Yes':'No', b.updatedAt]);
   }
   const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
   const blob = new Blob([csv], {type:'text/csv'});
@@ -1004,6 +1039,7 @@ document.getElementById('resetBtn').addEventListener('click', async ()=>{
   streaks = {};
   history = [];
   editingId = null;
+  setEditingBanner();
   await db.ref('books').set(JSON.stringify(books));
   await db.ref('streaks').set(JSON.stringify(streaks));
   await db.ref('history').set(null);
@@ -1031,9 +1067,9 @@ function attachDataListeners(){
     document.getElementById('connbar').textContent = '🔴 connection error — check Firebase rules/config';
   });
 
-  db.ref('photos').on('value', (snap)=>{
-    const raw = snap.val();
-    photos = raw ? JSON.parse(raw) : {};
+  db.ref('profiles').on('value', (snap)=>{
+    profiles = snap.val() || {};
+    renderProfilePreview();
     render(null);
   });
 
@@ -1079,6 +1115,20 @@ function showGate(){
   document.getElementById('appMain').style.display = 'none';
 }
 
+async function ensureProfile(user){
+  const ref = db.ref('profiles/'+user.uid);
+  const snap = await ref.once('value');
+  if(!snap.exists()){
+    const initial = {
+      displayName: user.displayName || (user.email ? user.email.split('@')[0] : 'Reader'),
+      photoURL: user.photoURL || '',
+      updatedAt: new Date().toISOString()
+    };
+    await ref.set(initial);
+    profiles[user.uid] = initial;
+  }
+}
+
 if(!isConfigured){
   document.getElementById('authGate').style.display = 'none';
   document.getElementById('appMain').style.display = 'block';
@@ -1091,7 +1141,9 @@ if(!isConfigured){
   setConnBar('ok');
 
   if(!REQUIRE_AUTH){
-    // Sign-in disabled — behave exactly like the open version.
+    // Sign-in disabled — behave exactly like the open version. Note: since
+    // profiles are tied to a signed-in identity, disabling auth also
+    // disables profiles/logging progress until it's turned back on.
     showApp(null);
     attachDataListeners();
   } else {
@@ -1108,11 +1160,16 @@ if(!isConfigured){
     });
 
     let listenersAttached = false;
-    auth.onAuthStateChanged((user)=>{
+    auth.onAuthStateChanged(async (user)=>{
       if(user){
+        currentUser = user;
         showApp(user);
         if(!listenersAttached){ attachDataListeners(); listenersAttached = true; }
+        await ensureProfile(user);
+        renderProfilePreview();
+        render(null);
       } else {
+        currentUser = null;
         showGate();
       }
     });
