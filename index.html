@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Family Shelf</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1F2E28;
+    --ink-2:#293D34;
+    --wood:#4A2E1F;
+    --wood-2:#5C3A25;
+    --parchment:#F4EBD9;
+    --parchment-2:#EADFC7;
+    --gold:#D9A441;
+    --brick:#A63D40;
+    --sage:#7C9473;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--ink);
+    background-image:
+      radial-gradient(circle at 15% 10%, rgba(217,164,65,0.06), transparent 40%),
+      radial-gradient(circle at 85% 90%, rgba(166,61,64,0.08), transparent 40%);
+    color:var(--parchment);
+    font-family:'Inter',sans-serif;
+    padding:28px 16px 60px;
+    min-height:100vh;
+  }
+  .wrap{max-width:720px;margin:0 auto;}
+
+  header{text-align:center;margin-bottom:20px;}
+  h1{
+    font-family:'Fraunces',serif;
+    font-optical-sizing:auto;
+    font-weight:700;
+    font-size:clamp(2rem,7vw,2.9rem);
+    margin:0 0 6px;
+    color:var(--parchment);
+    letter-spacing:-0.01em;
+  }
+  h1 span{color:var(--gold);}
+  .subtitle{color:var(--parchment-2);opacity:0.75;font-size:0.95rem;display:flex;align-items:center;justify-content:center;gap:8px;}
+  .live-dot{width:7px;height:7px;border-radius:50%;background:var(--sage);display:inline-block;animation:pulse 1.8s infinite;}
+  @keyframes pulse{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(124,148,115,0.5);}50%{opacity:0.6;box-shadow:0 0 0 5px rgba(124,148,115,0);}}
+
+  .connbar{text-align:center;font-size:0.72rem;margin-bottom:6px;font-family:'IBM Plex Mono',monospace;}
+  .connbar.ok{color:var(--sage);}
+  .connbar.bad{color:var(--brick);}
+
+  .totalbar{
+    display:flex;justify-content:center;gap:28px;
+    margin:22px 0 6px;flex-wrap:wrap;
+  }
+  .stat{text-align:center;}
+  .stat .num{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:1.5rem;color:var(--gold);}
+  .stat .lbl{font-size:0.72rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--parchment-2);opacity:0.7;}
+
+  section{margin-top:34px;}
+  .section-title{
+    font-family:'Fraunces',serif;font-weight:600;font-size:1.3rem;
+    margin-bottom:14px;color:var(--parchment);
+    display:flex;align-items:center;gap:8px;justify-content:space-between;
+  }
+  .section-title .hint{font-family:'Inter',sans-serif;font-weight:500;font-size:0.7rem;color:var(--parchment-2);opacity:0.55;text-transform:none;}
+
+  .podium{display:flex;align-items:flex-end;justify-content:center;gap:10px;margin-bottom:18px;}
+  .podium-slot{text-align:center;}
+  .podium-slot .p-avatar-wrap{position:relative;margin:0 auto 6px;}
+  .podium-slot.first .p-avatar-wrap{width:72px;height:72px;border:3px solid var(--gold);border-radius:50%;box-shadow:0 0 14px rgba(217,164,65,0.5);}
+  .podium-slot.second .p-avatar-wrap{width:56px;height:56px;border:2px solid #C9C9C9;border-radius:50%;}
+  .podium-slot.third .p-avatar-wrap{width:56px;height:56px;border:2px solid #B5793A;border-radius:50%;}
+  .p-avatar{width:100%;height:100%;border-radius:50%;object-fit:cover;display:block;}
+  .p-avatar-fallback{width:100%;height:100%;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Fraunces',serif;font-weight:700;color:#1a1a1a;}
+  .p-crown{position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-size:1.3rem;}
+  .p-name{font-size:0.8rem;font-weight:600;}
+  .p-pages{font-family:'IBM Plex Mono',monospace;font-size:0.75rem;color:var(--gold);}
+  .p-rank{font-size:0.65rem;color:var(--parchment-2);opacity:0.6;text-transform:uppercase;letter-spacing:0.05em;}
+
+  .board{display:flex;flex-direction:column;gap:8px;}
+  .row{
+    background:var(--ink-2);
+    border:1px solid rgba(244,235,217,0.08);
+    border-radius:10px;
+    padding:12px 14px;
+    display:flex;align-items:center;gap:12px;
+    position:relative;
+    overflow:hidden;
+    transition:background 0.6s;
+  }
+  .row.lead{border-color:rgba(217,164,65,0.5);background:linear-gradient(90deg, rgba(217,164,65,0.12), var(--ink-2) 60%);}
+  .row.flash{background:rgba(124,148,115,0.22) !important;}
+  .rank{
+    font-family:'IBM Plex Mono',monospace;font-weight:600;
+    width:22px;text-align:center;color:var(--parchment-2);opacity:0.6;font-size:0.9rem;
+  }
+  .row.lead .rank{opacity:1;color:var(--gold);}
+  .avatar{
+    width:34px;height:34px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Fraunces',serif;font-weight:700;color:#1a1a1a;
+    flex-shrink:0;font-size:0.95rem;overflow:hidden;
+  }
+  .avatar img{width:100%;height:100%;object-fit:cover;display:block;}
+  .who{flex:1;min-width:0;}
+  .name{font-weight:600;font-size:0.98rem;display:flex;align-items:center;gap:6px;}
+  .sub{font-size:0.75rem;color:var(--parchment-2);opacity:0.65;margin-top:1px;}
+  .pages{
+    font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:1.15rem;color:var(--parchment);
+    text-align:right;
+  }
+  .pages small{display:block;font-family:'Inter',sans-serif;font-weight:500;font-size:0.65rem;color:var(--parchment-2);opacity:0.6;text-transform:uppercase;letter-spacing:0.06em;}
+
+  .reading-card{
+    background:var(--ink-2);border:1px solid rgba(244,235,217,0.08);
+    border-radius:10px;padding:12px 14px;margin-bottom:8px;
+    transition:background 0.6s;
+  }
+  .reading-card.flash{background:rgba(124,148,115,0.22);}
+  .reading-top{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:6px;}
+  .reading-who{font-weight:600;font-size:0.9rem;}
+  .reading-book{font-size:0.85rem;color:var(--parchment-2);opacity:0.85;}
+  .reading-ago{font-size:0.68rem;color:var(--parchment-2);opacity:0.5;white-space:nowrap;}
+  .progress-track{background:rgba(0,0,0,0.3);border-radius:6px;height:9px;overflow:hidden;}
+  .progress-fill{height:100%;border-radius:6px;transition:width 0.8s ease;}
+  .reading-meta{display:flex;justify-content:space-between;margin-top:5px;font-size:0.72rem;color:var(--parchment-2);opacity:0.65;font-family:'IBM Plex Mono',monospace;}
+  .empty-note{color:var(--parchment-2);opacity:0.5;font-size:0.85rem;padding:14px 0;font-style:italic;text-align:center;}
+
+  .shelf-person{margin-bottom:26px;}
+  .shelf-label{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:0.85rem;color:var(--parchment-2);}
+  .shelf-label b{color:var(--parchment);font-weight:600;}
+  .shelf{
+    background:linear-gradient(180deg, transparent 0%, transparent 85%, var(--wood) 85%, var(--wood-2) 100%);
+    min-height:78px;border-radius:4px;padding:6px 8px 12px;
+    display:flex;align-items:flex-end;gap:3px;overflow-x:auto;position:relative;
+  }
+  .shelf::after{content:'';position:absolute;left:0;right:0;bottom:10px;height:3px;background:rgba(0,0,0,0.25);}
+  .spine{
+    width:16px;border-radius:2px 2px 0 0;
+    box-shadow:inset -2px 0 3px rgba(0,0,0,0.25), inset 2px 0 2px rgba(255,255,255,0.08);
+    flex-shrink:0;position:relative;cursor:default;
+    transition:height 0.6s ease, transform 0.15s;
+  }
+  .spine:hover{transform:translateY(-3px);}
+  .spine.reading{border:1px dashed rgba(244,235,217,0.55);box-shadow:0 0 8px rgba(217,164,65,0.35), inset -2px 0 3px rgba(0,0,0,0.25);}
+  .spine-title{
+    position:absolute;bottom:6px;left:50%;transform:translateX(-50%) rotate(180deg);
+    writing-mode:vertical-rl;font-size:0.55rem;color:rgba(255,255,255,0.85);
+    max-height:calc(100% - 10px);overflow:hidden;white-space:nowrap;font-weight:600;
+  }
+
+  .card{background:var(--ink-2);border:1px solid rgba(244,235,217,0.08);border-radius:14px;padding:20px;}
+  .field{margin-bottom:14px;}
+  label{display:block;font-size:0.75rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--parchment-2);opacity:0.75;margin-bottom:6px;}
+  label .opt{text-transform:none;opacity:0.6;letter-spacing:0;}
+  input, select{
+    width:100%;background:var(--ink);border:1px solid rgba(244,235,217,0.15);
+    border-radius:8px;padding:11px 12px;color:var(--parchment);font-family:'Inter',sans-serif;font-size:0.95rem;
+  }
+  input:focus, select:focus{outline:2px solid var(--gold);outline-offset:1px;border-color:transparent;}
+  input[type=file]{padding:8px;font-size:0.85rem;}
+  .row2{display:flex;gap:10px;}
+  .row2 .field{flex:1;}
+  button{
+    width:100%;background:var(--gold);color:#1F2E28;border:none;border-radius:8px;padding:13px;
+    font-weight:700;font-size:0.95rem;cursor:pointer;font-family:'Inter',sans-serif;transition:filter 0.15s;
+  }
+  button:hover{filter:brightness(1.08);}
+  button:active{filter:brightness(0.95);}
+  button:disabled{opacity:0.6;cursor:default;}
+  .msg{text-align:center;font-size:0.85rem;margin-top:10px;min-height:1.2em;color:var(--sage);}
+
+  .photo-preview{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
+  .photo-preview .avatar{width:52px;height:52px;font-size:1.1rem;}
+
+  .badges{display:flex;gap:4px;flex-wrap:wrap;}
+  .badge{font-size:0.9rem;}
+
+  footer{text-align:center;margin-top:36px;}
+  .reset-link{
+    background:none;border:none;color:var(--parchment-2);opacity:0.4;
+    font-size:0.75rem;cursor:pointer;text-decoration:underline;width:auto;padding:4px;
+  }
+  .reset-link:hover{opacity:0.7;filter:none;}
+
+  ::-webkit-scrollbar{height:6px;}
+  ::-webkit-scrollbar-thumb{background:rgba(244,235,217,0.2);border-radius:3px;}
+
+  .setup-banner{
+    background:rgba(166,61,64,0.15);border:1px solid var(--brick);border-radius:10px;
+    padding:14px;margin-bottom:20px;font-size:0.85rem;line-height:1.5;
+  }
+  .setup-banner code{background:rgba(0,0,0,0.3);padding:1px 5px;border-radius:4px;font-family:'IBM Plex Mono',monospace;}
+
+  /* Auth gate */
+  #authGate{
+    min-height:100vh;display:flex;align-items:center;justify-content:center;
+    padding:20px;
+  }
+  .gate-card{
+    background:var(--ink-2);border:1px solid rgba(244,235,217,0.12);
+    border-radius:16px;padding:32px 26px;max-width:360px;width:100%;text-align:center;
+  }
+  .gate-card h2{font-family:'Fraunces',serif;font-weight:700;font-size:1.5rem;margin:0 0 8px;}
+  .gate-card p{color:var(--parchment-2);opacity:0.75;font-size:0.9rem;margin:0 0 22px;line-height:1.5;}
+  .google-btn{
+    display:flex;align-items:center;justify-content:center;gap:10px;
+    background:#fff;color:#3c4043;border:none;border-radius:8px;padding:12px;
+    font-weight:600;font-size:0.95rem;cursor:pointer;width:100%;font-family:'Inter',sans-serif;
+  }
+  .google-btn:hover{filter:brightness(0.97);}
+  .google-btn svg{width:18px;height:18px;}
+  .gate-msg{margin-top:14px;font-size:0.82rem;color:var(--brick);min-height:1.2em;}
+  .whoami{
+    display:flex;align-items:center;justify-content:center;gap:8px;
+    font-size:0.75rem;color:var(--parchment-2);opacity:0.6;margin-bottom:18px;
+  }
+  .whoami button{
+    width:auto;background:none;border:none;color:var(--gold);text-decoration:underline;
+    padding:0;font-size:0.75rem;cursor:pointer;
+  }
+
+  /* Stakes cards */
+  .stakes-grid{display:flex;gap:10px;overflow-x:auto;padding-bottom:4px;}
+  .stake-card{
+    background:var(--ink-2);border:1px solid rgba(244,235,217,0.1);border-radius:14px;
+    padding:18px 14px;text-align:center;min-width:150px;flex-shrink:0;position:relative;
+  }
+  .stake-avatar{
+    width:56px;height:56px;border-radius:50%;margin:0 auto 10px;object-fit:cover;display:block;
+  }
+  .stake-avatar-fallback{
+    width:56px;height:56px;border-radius:50%;margin:0 auto 10px;display:flex;align-items:center;
+    justify-content:center;font-family:'Fraunces',serif;font-weight:700;color:#1a1a1a;
+  }
+  .stake-lead{font-weight:700;font-size:0.95rem;color:var(--gold);margin-bottom:4px;}
+  .stake-text{font-size:0.8rem;color:var(--parchment-2);opacity:0.8;}
+  .stake-remove{
+    position:absolute;top:6px;right:8px;background:none;border:none;color:var(--parchment-2);
+    opacity:0.4;font-size:0.9rem;cursor:pointer;width:auto;padding:2px 4px;
+  }
+  .stake-remove:hover{opacity:0.8;}
+  .add-stake-row{display:flex;gap:8px;margin-top:12px;}
+  .add-stake-row input{flex:1;}
+  .add-stake-row button{width:auto;padding:11px 16px;white-space:nowrap;}
+
+  /* Metric toggle */
+  .metric-toggle{
+    display:inline-flex;background:var(--ink-2);border:1px solid rgba(244,235,217,0.1);
+    border-radius:999px;padding:3px;margin-bottom:14px;
+  }
+  .metric-toggle button{
+    width:auto;background:transparent;color:var(--parchment-2);border:none;
+    border-radius:999px;padding:8px 16px;font-size:0.82rem;font-weight:600;cursor:pointer;
+  }
+  .metric-toggle button.active{background:var(--gold);color:#1F2E28;}
+
+  /* Rank badge + mini progress in standings rows */
+  .rank-badge{
+    width:26px;height:26px;border-radius:50%;flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;
+    font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:0.8rem;color:#1a1a1a;
+    background:rgba(244,235,217,0.15);
+  }
+  .rank-badge.r1{background:var(--gold);}
+  .rank-badge.r2{background:#C9C9C9;}
+  .rank-badge.r3{background:#B5793A;color:#fff;}
+  .mini-progress{background:rgba(0,0,0,0.3);border-radius:6px;height:6px;overflow:hidden;margin-top:6px;}
+  .mini-progress-fill{height:100%;border-radius:6px;background:var(--gold);transition:width 0.6s ease;}
+  .big-num{font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:1.3rem;color:var(--parchment);text-align:right;}
+  .big-label{font-size:0.65rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--parchment-2);opacity:0.6;text-align:right;}
+</style>
+</head>
+<body>
+
+<div id="authGate" style="display:none;">
+  <div class="gate-card">
+    <h2>The Family Shelf</h2>
+    <p>Sign in with a Google account to view and update the family's reading progress.</p>
+    <button class="google-btn" id="googleSignInBtn">
+      <svg viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3 0 5.8 1.1 7.9 3l5.7-5.7C34.1 6 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.2-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 15.9 18.9 13 24 13c3 0 5.8 1.1 7.9 3l5.7-5.7C34.1 6 29.3 4 24 4c-7.5 0-13.9 4.3-17.1 10.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-1.8 13.5-5l-6.2-5.2c-2 1.4-4.5 2.2-7.3 2.2-5.3 0-9.7-3.3-11.3-8l-6.5 5C9.9 39.6 16.4 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.3 4.3-4.2 5.8l6.2 5.2C40.5 36.6 44 30.9 44 24c0-1.2-.1-2.4-.4-3.5z"/></svg>
+      Sign in with Google
+    </button>
+    <div class="gate-msg" id="gateMsg"></div>
+  </div>
+</div>
+
+<div class="wrap" id="appMain" style="display:none;">
+  <div class="whoami" id="whoami"></div>
+  <header>
+    <h1>The Family <span>Shelf</span></h1>
+    <div class="subtitle"><span class="live-dot"></span> real-time — powered by Firebase</div>
+  </header>
+
+  <div class="connbar" id="connbar"></div>
+
+  <div id="setupBanner" class="setup-banner" style="display:none;">
+    ⚠️ <b>Setup needed:</b> This app needs your Firebase project's config pasted into the code before it can save anything.
+    Open this file in a text editor, find the <code>firebaseConfig</code> object near the bottom, and replace the placeholder values with your own project's keys from the Firebase console.
+  </div>
+
+  <div class="totalbar">
+    <div class="stat"><div class="num" id="totBooks">0</div><div class="lbl">Books finished</div></div>
+    <div class="stat"><div class="num" id="totPages">0</div><div class="lbl">Pages read</div></div>
+    <div class="stat"><div class="num" id="totReaders">0</div><div class="lbl">Readers</div></div>
+  </div>
+
+  <section>
+    <div class="section-title">🎉 The Stakes</div>
+    <div class="stakes-grid" id="stakesGrid"></div>
+    <div class="add-stake-row">
+      <input id="stakeInput" placeholder="e.g. Picks the restaurant" autocomplete="off">
+      <button id="addStakeBtn">Add</button>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-title">🏆 Leaderboard — by pages read</div>
+    <div class="podium" id="podium"></div>
+    <div class="metric-toggle" id="metricToggle">
+      <button data-metric="books" id="metricBooksBtn">📖 Books</button>
+      <button data-metric="pages" id="metricPagesBtn" class="active">📄 Pages</button>
+    </div>
+    <div class="board" id="board"></div>
+  </section>
+
+  <section>
+    <div class="section-title">📖 Currently reading</div>
+    <div id="reading"></div>
+  </section>
+
+  <section>
+    <div class="section-title">📚 The Shelf</div>
+    <div id="shelves"></div>
+  </section>
+
+  <section>
+    <div class="section-title">📸 Your photo</div>
+    <div class="card">
+      <div class="field">
+        <label for="photoName">Reader</label>
+        <input id="photoName" list="nameList" placeholder="e.g. Mom, Sam, Grandpa..." autocomplete="off">
+      </div>
+      <div class="photo-preview">
+        <div class="avatar" id="photoPreview">?</div>
+        <div style="flex:1;">
+          <input id="photoFile" type="file" accept="image/*">
+        </div>
+      </div>
+      <button id="photoBtn">Save photo</button>
+      <div class="msg" id="photoMsg"></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-title">✍️ Update your progress</div>
+    <div class="card">
+      <div class="field">
+        <label for="name">Reader</label>
+        <input id="name" list="nameList" placeholder="e.g. Mom, Sam, Grandpa..." autocomplete="off">
+        <datalist id="nameList"></datalist>
+      </div>
+      <div class="field">
+        <label for="title">Book title <span class="opt">(same title = same book, progress updates)</span></label>
+        <input id="title" list="titleList" placeholder="e.g. The Hobbit" autocomplete="off">
+        <datalist id="titleList"></datalist>
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label for="current">I'm on page</label>
+          <input id="current" type="number" min="1" placeholder="128">
+        </div>
+        <div class="field">
+          <label for="total">Total pages <span class="opt">(optional)</span></label>
+          <input id="total" type="number" min="1" placeholder="310">
+        </div>
+      </div>
+      <button id="addBtn">Update my progress</button>
+      <div class="msg" id="msg"></div>
+    </div>
+  </section>
+
+  <footer>
+    <button class="reset-link" id="resetBtn">clear all data</button>
+  </footer>
+</div>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+
+<script>
+/* ======================================================
+   PASTE YOUR OWN FIREBASE PROJECT CONFIG HERE.
+   Get this from: Firebase Console > Project Settings > General
+   > "Your apps" > SDK setup and configuration.
+   ====================================================== */
+const firebaseConfig = {
+  apiKey: "AIzaSyDezf5HBOhODjOZfEj0yOwoom__cujMRYw",
+  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+  databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_PROJECT_ID.appspot.com",
+  messagingSenderId: "YOUR_SENDER_ID",
+  appId: "YOUR_APP_ID"
+};
+/* ====================================================== */
+
+const isConfigured = !Object.values(firebaseConfig).some(v => String(v).startsWith('YOUR_'));
+let db = null;
+let auth = null;
+
+/* ======================================================
+   EASY REVERT SWITCH.
+   Set to false to turn OFF the Google sign-in requirement
+   and let anyone with the link use the app immediately,
+   like before. If you do this, also change your Firebase
+   Realtime Database rules back to:
+     { "rules": { ".read": true, ".write": true } }
+   ====================================================== */
+const REQUIRE_AUTH = true;
+
+const SPINE_COLORS = ['#A63D40','#D9A441','#7C9473','#4A6FA5','#8C5E9C','#C97B4A'];
+const MILESTONES = [
+  {p:2000, badge:'👑'},
+  {p:1000, badge:'🥇'},
+  {p:500, badge:'⭐'},
+  {p:100, badge:'🔖'}
+];
+let books = [];
+let photos = {};
+let stakes = [];
+let leaderboardMetric = 'pages';
+
+function hashName(str){
+  let h = 0;
+  for(let i=0;i<str.length;i++){ h = str.charCodeAt(i) + ((h<<5)-h); }
+  return Math.abs(h);
+}
+function colorFor(str){ return SPINE_COLORS[hashName(str) % SPINE_COLORS.length]; }
+function initials(name){ return name.trim().split(/\s+/).map(w=>w[0]).slice(0,2).join('').toUpperCase(); }
+function badgeFor(totalPages){ const m = MILESTONES.find(m => totalPages >= m.p); return m ? m.badge : ''; }
+function escapeHtml(str){ const d = document.createElement('div'); d.textContent = str; return d.innerHTML; }
+function timeAgo(iso){
+  const s = Math.floor((Date.now() - new Date(iso).getTime())/1000);
+  if(s < 10) return 'just now';
+  if(s < 60) return s+'s ago';
+  const m = Math.floor(s/60); if(m < 60) return m+'m ago';
+  const h = Math.floor(m/60); if(h < 24) return h+'h ago';
+  return Math.floor(h/24)+'d ago';
+}
+function avatarHtml(name){
+  const key = name.trim().toLowerCase();
+  if(photos[key]) return `<img src="${photos[key]}" alt="${escapeHtml(name)}">`;
+  return initials(name);
+}
+function avatarStyleBg(name){
+  const key = name.trim().toLowerCase();
+  return photos[key] ? 'transparent' : colorFor(name);
+}
+function byPerson(){
+  const map = {};
+  for(const b of books){ if(!map[b.name]) map[b.name] = []; map[b.name].push(b); }
+  return map;
+}
+
+function render(prevIds){
+  const grouped = byPerson();
+  const people = Object.keys(grouped);
+  const finishedCount = books.filter(b=>b.finished).length;
+  const totalPagesRead = books.reduce((s,b)=>s+b.pagesRead,0);
+
+  document.getElementById('totBooks').textContent = finishedCount;
+  document.getElementById('totPages').textContent = totalPagesRead.toLocaleString();
+  document.getElementById('totReaders').textContent = people.length;
+  document.getElementById('nameList').innerHTML = people.map(p=>`<option value="${escapeHtml(p)}">`).join('');
+  const titles = [...new Set(books.map(b=>b.title))];
+  document.getElementById('titleList').innerHTML = titles.map(t=>`<option value="${escapeHtml(t)}">`).join('');
+
+  const stats = people.map(name=>{
+    const list = grouped[name];
+    const pages = list.reduce((s,b)=>s+b.pagesRead,0);
+    const finished = list.filter(b=>b.finished).length;
+    return {name, pages, finished};
+  }).sort((a,b)=>b.pages - a.pages);
+
+  const podiumEl = document.getElementById('podium');
+  if(stats.length === 0){ podiumEl.innerHTML = ''; }
+  else {
+    const order = [1,0,2].filter(i => stats[i]);
+    const classNames = {0:'first',1:'second',2:'third'};
+    podiumEl.innerHTML = order.map(i=>{
+      const s = stats[i]; const cls = classNames[i];
+      const crown = i===0 ? '<div class="p-crown">👑</div>' : '';
+      const key = s.name.trim().toLowerCase();
+      return `
+      <div class="podium-slot ${cls}">
+        <div class="p-avatar-wrap">
+          ${crown}
+          ${photos[key]
+            ? `<img class="p-avatar" src="${photos[key]}" alt="${escapeHtml(s.name)}">`
+            : `<div class="p-avatar-fallback" style="background:${colorFor(s.name)};width:100%;height:100%;">${initials(s.name)}</div>`}
+        </div>
+        <div class="p-rank">#${i+1}</div>
+        <div class="p-name">${escapeHtml(s.name)}</div>
+        <div class="p-pages">${s.pages.toLocaleString()}p</div>
+      </div>`;
+    }).join('');
+  }
+
+  const board = document.getElementById('board');
+  if(stats.length === 0){
+    board.innerHTML = `<div class="card" style="text-align:center;color:var(--parchment-2);opacity:0.6;">No progress logged yet — be the first!</div>`;
+  } else {
+    const metricStats = [...stats].sort((a,b)=>{
+      const av = leaderboardMetric === 'books' ? a.finished : a.pages;
+      const bv = leaderboardMetric === 'books' ? b.finished : b.pages;
+      return bv - av;
+    });
+    const maxVal = Math.max(1, leaderboardMetric === 'books' ? metricStats[0].finished : metricStats[0].pages);
+    board.innerHTML = metricStats.map((s,i)=>{
+      const badge = badgeFor(s.pages);
+      const val = leaderboardMetric === 'books' ? s.finished : s.pages;
+      const pct = Math.round((val / maxVal) * 100);
+      const rankCls = i===0 ? 'r1' : i===1 ? 'r2' : i===2 ? 'r3' : '';
+      return `
+      <div class="row ${i===0?'lead':''}">
+        <div class="rank-badge ${rankCls}">${i+1}</div>
+        <div class="avatar" style="background:${avatarStyleBg(s.name)}">${avatarHtml(s.name)}</div>
+        <div class="who">
+          <div class="name">${escapeHtml(s.name)} ${i===0?'👑':''} <span class="badges">${badge?`<span class="badge">${badge}</span>`:''}</span></div>
+          <div class="sub">${s.finished} books · ${s.pages.toLocaleString()} pages</div>
+          <div class="mini-progress"><div class="mini-progress-fill" style="width:${pct}%;"></div></div>
+        </div>
+        <div>
+          <div class="big-num">${val.toLocaleString()}</div>
+          <div class="big-label">${leaderboardMetric}</div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  // Stakes — "X is leading!" prize cards, tied to the overall pages leader
+  const stakesEl = document.getElementById('stakesGrid');
+  const leader = stats[0];
+  if(!leader || stakes.length === 0){
+    stakesEl.innerHTML = `<div class="empty-note" style="width:100%;">${stakes.length===0 ? 'Add a stake below (like picks the restaurant) and whoever is leading gets it.' : 'No progress logged yet.'}</div>`;
+  } else {
+    const key = leader.name.trim().toLowerCase();
+    stakesEl.innerHTML = stakes.map((stake, idx)=>`
+      <div class="stake-card">
+        <button class="stake-remove" data-idx="${idx}" title="Remove this stake">✕</button>
+        ${photos[key]
+          ? `<img class="stake-avatar" src="${photos[key]}" alt="${escapeHtml(leader.name)}">`
+          : `<div class="stake-avatar-fallback" style="background:${colorFor(leader.name)}">${initials(leader.name)}</div>`}
+        <div class="stake-lead">${escapeHtml(leader.name)} is leading!</div>
+        <div class="stake-text">${escapeHtml(stake)}</div>
+      </div>`).join('');
+    stakesEl.querySelectorAll('.stake-remove').forEach(btn=>{
+      btn.addEventListener('click', async ()=>{
+        const idx = parseInt(btn.dataset.idx, 10);
+        stakes.splice(idx, 1);
+        await db.ref('stakes').set(JSON.stringify(stakes));
+      });
+    });
+  }
+
+  const active = books.filter(b=>!b.finished).sort((a,b)=> new Date(b.updatedAt) - new Date(a.updatedAt));
+  const readingEl = document.getElementById('reading');
+  if(active.length === 0){
+    readingEl.innerHTML = `<div class="empty-note">Nobody has an open book right now.</div>`;
+  } else {
+    readingEl.innerHTML = active.map(b=>{
+      const changed = prevIds && !prevIds.has(b.id+':'+b.pagesRead);
+      const pct = b.totalPages ? Math.min(100, Math.round(b.pagesRead/b.totalPages*100)) : null;
+      return `
+      <div class="reading-card ${changed?'flash':''}" data-id="${b.id}">
+        <div class="reading-top">
+          <div><span class="reading-who">${escapeHtml(b.name)}</span> <span class="reading-book">— ${escapeHtml(b.title)}</span></div>
+          <div class="reading-ago">${timeAgo(b.updatedAt)}</div>
+        </div>
+        <div class="progress-track"><div class="progress-fill" style="width:${pct!==null?pct:Math.min(100, b.pagesRead/5)}%;background:${colorFor(b.title)}"></div></div>
+        <div class="reading-meta">
+          <span>page ${b.pagesRead}${b.totalPages?` of ${b.totalPages}`:''}</span>
+          <span>${pct!==null?pct+'%':''}</span>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  const shelvesEl = document.getElementById('shelves');
+  if(people.length === 0){
+    shelvesEl.innerHTML = `<div class="card" style="text-align:center;color:var(--parchment-2);opacity:0.5;font-style:italic;">The shelf is empty. Update progress below to start filling it in.</div>`;
+  } else {
+    shelvesEl.innerHTML = stats.map(s=>{
+      const list = grouped[s.name];
+      const spines = list.map(b=>{
+        const basis = b.totalPages || b.pagesRead;
+        const h = Math.max(34, Math.min(72, 30 + basis/12));
+        return `<div class="spine ${b.finished?'':'reading'}" style="height:${h}px;background:${colorFor(b.title)}" title="${escapeHtml(b.title)} — ${b.pagesRead}${b.totalPages?'/'+b.totalPages:''}pg${b.finished?' (finished)':' (reading)'}">
+          <div class="spine-title">${escapeHtml(b.title.length>18?b.title.slice(0,18)+'…':b.title)}</div>
+        </div>`;
+      }).join('');
+      return `
+      <div class="shelf-person">
+        <div class="shelf-label"><b>${escapeHtml(s.name)}</b> · ${s.finished} finished · ${s.pages.toLocaleString()} pages</div>
+        <div class="shelf">${spines}</div>
+      </div>`;
+    }).join('');
+  }
+}
+
+function resizeImageFile(file){
+  return new Promise((resolve, reject)=>{
+    const reader = new FileReader();
+    reader.onload = (e)=>{
+      const img = new Image();
+      img.onload = ()=>{
+        const maxDim = 200;
+        let w = img.width, h = img.height;
+        if(w > h && w > maxDim){ h = Math.round(h * maxDim/w); w = maxDim; }
+        else if(h > maxDim){ w = Math.round(w * maxDim/h); h = maxDim; }
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/jpeg', 0.75));
+      };
+      img.onerror = reject;
+      img.src = e.target.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+document.getElementById('photoName').addEventListener('input', (e)=>{
+  const key = e.target.value.trim().toLowerCase();
+  const preview = document.getElementById('photoPreview');
+  if(photos[key]){
+    preview.style.background = 'transparent';
+    preview.innerHTML = `<img src="${photos[key]}" alt="">`;
+  } else {
+    preview.style.background = e.target.value.trim() ? colorFor(e.target.value.trim()) : 'var(--ink)';
+    preview.innerHTML = e.target.value.trim() ? initials(e.target.value.trim()) : '?';
+  }
+});
+
+document.getElementById('photoBtn').addEventListener('click', async ()=>{
+  const nameEl = document.getElementById('photoName');
+  const fileEl = document.getElementById('photoFile');
+  const msg = document.getElementById('photoMsg');
+  const name = nameEl.value.trim();
+
+  if(!isConfigured){ msg.style.color='var(--brick)'; msg.textContent = 'Firebase not configured yet — see the banner above.'; return; }
+  if(!name){ msg.style.color = 'var(--brick)'; msg.textContent = 'Enter a reader name first.'; return; }
+  if(!fileEl.files || !fileEl.files[0]){ msg.style.color = 'var(--brick)'; msg.textContent = 'Choose a photo to upload.'; return; }
+
+  const btn = document.getElementById('photoBtn');
+  btn.disabled = true; btn.textContent = 'Saving...';
+
+  try{
+    const dataUrl = await resizeImageFile(fileEl.files[0]);
+    photos[name.toLowerCase()] = dataUrl;
+    await db.ref('photos').set(JSON.stringify(photos));
+    msg.style.color = 'var(--sage)';
+    msg.textContent = `Saved ${name}'s photo.`;
+    fileEl.value = '';
+  }catch(e){
+    msg.style.color = 'var(--brick)';
+    msg.textContent = "Couldn't save — check your connection and try again.";
+  }
+  btn.disabled = false; btn.textContent = 'Save photo';
+});
+
+document.getElementById('addBtn').addEventListener('click', async ()=>{
+  const nameEl = document.getElementById('name');
+  const titleEl = document.getElementById('title');
+  const currentEl = document.getElementById('current');
+  const totalEl = document.getElementById('total');
+  const msg = document.getElementById('msg');
+
+  if(!isConfigured){ msg.style.color='var(--brick)'; msg.textContent = 'Firebase not configured yet — see the banner above.'; return; }
+
+  const name = nameEl.value.trim();
+  const title = titleEl.value.trim();
+  const current = parseInt(currentEl.value, 10);
+  const total = totalEl.value ? parseInt(totalEl.value, 10) : null;
+
+  if(!name || !title || !current || current <= 0){
+    msg.style.color = 'var(--brick)'; msg.textContent = 'Fill in a reader, book title, and current page.'; return;
+  }
+  if(total && current > total){
+    msg.style.color = 'var(--brick)'; msg.textContent = "Current page can't be past the total."; return;
+  }
+
+  const btn = document.getElementById('addBtn');
+  btn.disabled = true; btn.textContent = 'Updating...';
+
+  const key = (n,t)=> n.toLowerCase()+'|'+t.toLowerCase();
+  let existing = books.find(b => !b.finished && key(b.name,b.title) === key(name,title));
+  const now = new Date().toISOString();
+
+  if(existing){
+    existing.pagesRead = current;
+    if(total) existing.totalPages = total;
+    existing.updatedAt = now;
+    existing.finished = existing.totalPages ? current >= existing.totalPages : false;
+  } else {
+    books.push({
+      id: Date.now()+'-'+Math.random().toString(36).slice(2),
+      name, title, pagesRead: current, totalPages: total,
+      finished: total ? current >= total : false,
+      createdAt: now, updatedAt: now
+    });
+  }
+
+  try{
+    await db.ref('books').set(JSON.stringify(books));
+    msg.style.color = 'var(--sage)';
+    msg.textContent = existing && existing.finished ? `🎉 ${name} finished "${title}"!` : `Updated ${name}'s progress in "${title}".`;
+    currentEl.value = '';
+  }catch(e){
+    msg.style.color = 'var(--brick)';
+    msg.textContent = "Couldn't save — check your connection and try again.";
+  }
+  btn.disabled = false; btn.textContent = 'Update my progress';
+});
+
+document.getElementById('addStakeBtn').addEventListener('click', async ()=>{
+  if(!isConfigured || !db) return;
+  const input = document.getElementById('stakeInput');
+  const text = input.value.trim();
+  if(!text) return;
+  stakes.push(text);
+  await db.ref('stakes').set(JSON.stringify(stakes));
+  input.value = '';
+});
+document.getElementById('stakeInput').addEventListener('keydown', (e)=>{
+  if(e.key === 'Enter') document.getElementById('addStakeBtn').click();
+});
+
+document.getElementById('metricBooksBtn').addEventListener('click', ()=>{
+  leaderboardMetric = 'books';
+  document.getElementById('metricBooksBtn').classList.add('active');
+  document.getElementById('metricPagesBtn').classList.remove('active');
+  render(null);
+});
+document.getElementById('metricPagesBtn').addEventListener('click', ()=>{
+  leaderboardMetric = 'pages';
+  document.getElementById('metricPagesBtn').classList.add('active');
+  document.getElementById('metricBooksBtn').classList.remove('active');
+  render(null);
+});
+
+document.getElementById('resetBtn').addEventListener('click', async ()=>{
+  if(!isConfigured) return;
+  if(!confirm('Clear every logged book for the whole family? This cannot be undone.')) return;
+  books = [];
+  await db.ref('books').set(JSON.stringify(books));
+});
+
+function setConnBar(state){
+  const el = document.getElementById('connbar');
+  if(state === 'ok'){ el.className='connbar ok'; el.textContent = '🟢 connected — syncing live'; }
+  else if(state === 'bad'){ el.className='connbar bad'; el.textContent = '🔴 not configured — see setup note below'; }
+  else { el.className='connbar'; el.textContent = ''; }
+}
+
+function attachDataListeners(){
+  // Real-time listeners — fire immediately with current data, then on every change.
+  db.ref('books').on('value', (snap)=>{
+    const raw = snap.val();
+    const prevIds = new Set(books.map(b=>b.id+':'+b.pagesRead));
+    books = raw ? JSON.parse(raw) : [];
+    render(prevIds.size ? prevIds : null);
+  }, (err)=>{
+    setConnBar('bad');
+    document.getElementById('connbar').textContent = '🔴 connection error — check Firebase rules/config';
+  });
+
+  db.ref('photos').on('value', (snap)=>{
+    const raw = snap.val();
+    photos = raw ? JSON.parse(raw) : {};
+    render(null);
+  });
+
+  db.ref('stakes').on('value', (snap)=>{
+    const raw = snap.val();
+    stakes = raw ? JSON.parse(raw) : [];
+    render(null);
+  });
+}
+
+function showApp(user){
+  document.getElementById('authGate').style.display = 'none';
+  document.getElementById('appMain').style.display = 'block';
+  const whoami = document.getElementById('whoami');
+  if(user){
+    whoami.innerHTML = `Signed in as ${escapeHtml(user.displayName || user.email)} · <button id="signOutBtn">sign out</button>`;
+    document.getElementById('signOutBtn').addEventListener('click', ()=> auth.signOut());
+  } else {
+    whoami.innerHTML = '';
+  }
+}
+
+function showGate(){
+  document.getElementById('authGate').style.display = 'flex';
+  document.getElementById('appMain').style.display = 'none';
+}
+
+if(!isConfigured){
+  document.getElementById('authGate').style.display = 'none';
+  document.getElementById('appMain').style.display = 'block';
+  document.getElementById('setupBanner').style.display = 'block';
+  setConnBar('bad');
+  render(null);
+} else {
+  firebase.initializeApp(firebaseConfig);
+  db = firebase.database();
+  setConnBar('ok');
+
+  if(!REQUIRE_AUTH){
+    // Sign-in disabled — behave exactly like the open version.
+    showApp(null);
+    attachDataListeners();
+  } else {
+    auth = firebase.auth();
+
+    document.getElementById('googleSignInBtn').addEventListener('click', async ()=>{
+      const gateMsg = document.getElementById('gateMsg');
+      gateMsg.textContent = '';
+      try{
+        await auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());
+      }catch(e){
+        gateMsg.textContent = "Couldn't sign in — try again.";
+      }
+    });
+
+    let listenersAttached = false;
+    auth.onAuthStateChanged((user)=>{
+      if(user){
+        showApp(user);
+        if(!listenersAttached){ attachDataListeners(); listenersAttached = true; }
+      } else {
+        showGate();
+      }
+    });
+  }
+}
+</script>
+</body>
+</html>
