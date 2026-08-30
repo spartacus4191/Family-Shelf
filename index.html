@@ -4,6 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>The Family Shelf</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="favicon-32.png" sizes="32x32">
+<meta name="theme-color" content="#1F2E28">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Fam Shelf">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 <style>
@@ -272,6 +279,44 @@
   .mini-progress-fill{height:100%;border-radius:6px;background:var(--gold);transition:width 0.6s ease;}
   .big-num{font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:1.3rem;color:var(--parchment);text-align:right;}
   .big-label{font-size:0.65rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--parchment-2);opacity:0.6;text-align:right;}
+
+  .offline-banner{
+    display:none;background:rgba(166,61,64,0.2);border:1px solid var(--brick);
+    border-radius:10px;padding:10px 14px;text-align:center;font-size:0.82rem;margin-bottom:16px;
+  }
+  .offline-banner.show{display:block;}
+
+  .streak{font-size:0.72rem;color:var(--gold);font-weight:600;white-space:nowrap;}
+
+  .period-toggle{margin-left:6px;}
+
+  .cover-spine{
+    width:38px !important;border-radius:3px;overflow:hidden;
+    box-shadow:0 2px 5px rgba(0,0,0,0.4);
+  }
+  .cover-spine img{width:100%;height:100%;object-fit:cover;display:block;}
+
+  .manage-list{display:flex;flex-direction:column;gap:6px;}
+  .manage-row{
+    background:var(--ink-2);border:1px solid rgba(244,235,217,0.08);border-radius:8px;
+    padding:9px 12px;display:flex;align-items:center;gap:10px;font-size:0.82rem;
+  }
+  .manage-info{flex:1;min-width:0;}
+  .manage-info b{color:var(--parchment);}
+  .manage-info span{color:var(--parchment-2);opacity:0.65;font-size:0.75rem;display:block;}
+  .manage-actions{display:flex;gap:6px;}
+  .manage-actions button{
+    width:auto;padding:6px 10px;font-size:0.75rem;font-weight:600;
+  }
+  .btn-edit{background:transparent;border:1px solid var(--gold);color:var(--gold);}
+  .btn-delete{background:transparent;border:1px solid var(--brick);color:var(--brick);}
+
+  .export-btn{background:transparent;border:1px solid rgba(244,235,217,0.25);color:var(--parchment-2);margin-top:10px;}
+
+  .confetti-piece{
+    position:fixed;top:-10px;width:8px;height:14px;pointer-events:none;z-index:9999;
+    border-radius:2px;
+  }
 </style>
 </head>
 <body>
@@ -296,6 +341,7 @@
   </header>
 
   <div class="connbar" id="connbar"></div>
+  <div class="offline-banner" id="offlineBanner">📡 You're offline — updates will save once you're back online.</div>
 
   <div id="setupBanner" class="setup-banner" style="display:none;">
     ⚠️ <b>Setup needed:</b> This app needs your Firebase project's config pasted into the code before it can save anything.
@@ -323,6 +369,10 @@
     <div class="metric-toggle" id="metricToggle">
       <button data-metric="books" id="metricBooksBtn">📖 Books</button>
       <button data-metric="pages" id="metricPagesBtn" class="active">📄 Pages</button>
+    </div>
+    <div class="metric-toggle period-toggle" id="periodToggle">
+      <button data-period="all" id="periodAllBtn" class="active">All-Time</button>
+      <button data-period="month" id="periodMonthBtn">This Month</button>
     </div>
     <div class="board" id="board"></div>
   </section>
@@ -383,6 +433,12 @@
     </div>
   </section>
 
+  <section>
+    <div class="section-title">🛠️ Manage entries <span class="hint">fix a typo or remove a book</span></div>
+    <div class="manage-list" id="manageList"></div>
+    <button class="export-btn" id="exportBtn">⬇️ Export data as CSV</button>
+  </section>
+
   <footer>
     <button class="reset-link" id="resetBtn">clear all data</button>
   </footer>
@@ -400,14 +456,13 @@
    > "Your apps" > SDK setup and configuration.
    ====================================================== */
 const firebaseConfig = {
-  apiKey: "AIzaSyDezf5HBOhODjOZfEj0yOwoom__cujMRYw",
-  authDomain: "the-family-shelf.firebaseapp.com",
-  databaseURL: "https://the-family-shelf-default-rtdb.firebaseio.com",
-  projectId: "the-family-shelf",
-  storageBucket: "the-family-shelf.firebasestorage.app",
-  messagingSenderId: "1094674329192",
-  appId: "1:1094674329192:web:b5843275c738a9cc7f95dd",
-  measurementId: "G-T2YMSBHPD5"
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+  databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_PROJECT_ID.appspot.com",
+  messagingSenderId: "YOUR_SENDER_ID",
+  appId: "YOUR_APP_ID"
 };
 /* ====================================================== */
 
@@ -435,7 +490,13 @@ const MILESTONES = [
 let books = [];
 let photos = {};
 let stakes = [];
+let covers = {};
+let streaks = {};
+let history = [];
 let leaderboardMetric = 'pages';
+let leaderboardPeriod = 'all';
+let coverFetchAttempted = {};
+let editingId = null;
 
 function hashName(str){
   let h = 0;
@@ -469,6 +530,71 @@ function byPerson(){
   return map;
 }
 
+function launchConfetti(){
+  const colors = ['#A63D40','#D9A441','#7C9473','#4A6FA5','#C97B4A'];
+  for(let i=0;i<40;i++){
+    const piece = document.createElement('div');
+    piece.className = 'confetti-piece';
+    piece.style.left = Math.random()*100+'vw';
+    piece.style.background = colors[Math.floor(Math.random()*colors.length)];
+    piece.style.transform = `rotate(${Math.random()*360}deg)`;
+    piece.style.animation = `confettiFall ${1.6+Math.random()*1.2}s linear forwards`;
+    piece.style.animationDelay = (Math.random()*0.3)+'s';
+    document.body.appendChild(piece);
+    setTimeout(()=>piece.remove(), 3200);
+  }
+}
+if(!document.getElementById('confettiKeyframes')){
+  const style = document.createElement('style');
+  style.id = 'confettiKeyframes';
+  style.textContent = `@keyframes confettiFall{to{transform:translateY(105vh) rotate(720deg);opacity:0.3;}}`;
+  document.head.appendChild(style);
+}
+
+async function fetchCoverForTitle(title){
+  const key = title.trim().toLowerCase();
+  if(covers[key] !== undefined || coverFetchAttempted[key]) return;
+  coverFetchAttempted[key] = true;
+  try{
+    const res = await fetch('https://openlibrary.org/search.json?title='+encodeURIComponent(title)+'&limit=1&fields=cover_i');
+    const data = await res.json();
+    const coverId = data.docs && data.docs[0] && data.docs[0].cover_i;
+    const url = coverId ? `https://covers.openlibrary.org/b/id/${coverId}-M.jpg` : '';
+    covers[key] = url;
+    if(db) await db.ref('covers').set(JSON.stringify(covers));
+    render(null);
+  }catch(e){
+    covers[key] = '';
+  }
+}
+
+function todayStr(){
+  const d = new Date();
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+function daysBetween(a,b){ return Math.round((new Date(b) - new Date(a)) / 86400000); }
+
+function updateStreak(nameKey){
+  const today = todayStr();
+  const s = streaks[nameKey];
+  if(!s){ streaks[nameKey] = {count:1, lastDate:today}; return; }
+  if(s.lastDate === today) return; // already logged today
+  const gap = daysBetween(s.lastDate, today);
+  if(gap === 1){ s.count = (s.count||1) + 1; }
+  else { s.count = 1; }
+  s.lastDate = today;
+}
+
+function monthlyPagesByPerson(){
+  const ym = new Date().toISOString().slice(0,7); // UTC year-month, matches history's UTC timestamps
+  const map = {};
+  for(const h of history){
+    if(!h.timestamp || !h.timestamp.startsWith(ym)) continue;
+    map[h.name] = (map[h.name]||0) + h.delta;
+  }
+  return map;
+}
+
 function render(prevIds){
   const grouped = byPerson();
   const people = Object.keys(grouped);
@@ -482,11 +608,13 @@ function render(prevIds){
   const titles = [...new Set(books.map(b=>b.title))];
   document.getElementById('titleList').innerHTML = titles.map(t=>`<option value="${escapeHtml(t)}">`).join('');
 
+  const monthly = monthlyPagesByPerson();
   const stats = people.map(name=>{
     const list = grouped[name];
     const pages = list.reduce((s,b)=>s+b.pagesRead,0);
     const finished = list.filter(b=>b.finished).length;
-    return {name, pages, finished};
+    const streak = streaks[name.trim().toLowerCase()];
+    return {name, pages, finished, monthPages: monthly[name] || 0, streakCount: streak ? streak.count : 0};
   }).sort((a,b)=>b.pages - a.pages);
 
   const podiumEl = document.getElementById('podium');
@@ -507,7 +635,7 @@ function render(prevIds){
             : `<div class="p-avatar-fallback" style="background:${colorFor(s.name)};width:100%;height:100%;">${initials(s.name)}</div>`}
         </div>
         <div class="p-rank">#${i+1}</div>
-        <div class="p-name">${escapeHtml(s.name)}</div>
+        <div class="p-name">${escapeHtml(s.name)} ${s.streakCount>1?`<span class="streak">🔥${s.streakCount}</span>`:''}</div>
         <div class="p-pages">${s.pages.toLocaleString()}p</div>
       </div>`;
     }).join('');
@@ -517,15 +645,16 @@ function render(prevIds){
   if(stats.length === 0){
     board.innerHTML = `<div class="card" style="text-align:center;color:var(--parchment-2);opacity:0.6;">No progress logged yet — be the first!</div>`;
   } else {
-    const metricStats = [...stats].sort((a,b)=>{
-      const av = leaderboardMetric === 'books' ? a.finished : a.pages;
-      const bv = leaderboardMetric === 'books' ? b.finished : b.pages;
-      return bv - av;
-    });
-    const maxVal = Math.max(1, leaderboardMetric === 'books' ? metricStats[0].finished : metricStats[0].pages);
+    const valueFor = (s)=>{
+      if(leaderboardMetric === 'books') return s.finished;
+      return leaderboardPeriod === 'month' ? s.monthPages : s.pages;
+    };
+    const metricStats = [...stats].sort((a,b)=> valueFor(b) - valueFor(a));
+    const maxVal = Math.max(1, valueFor(metricStats[0]));
+    const unitLabel = leaderboardMetric === 'books' ? 'books' : (leaderboardPeriod==='month' ? 'pages this month' : 'pages');
     board.innerHTML = metricStats.map((s,i)=>{
       const badge = badgeFor(s.pages);
-      const val = leaderboardMetric === 'books' ? s.finished : s.pages;
+      const val = valueFor(s);
       const pct = Math.round((val / maxVal) * 100);
       const rankCls = i===0 ? 'r1' : i===1 ? 'r2' : i===2 ? 'r3' : '';
       return `
@@ -533,13 +662,13 @@ function render(prevIds){
         <div class="rank-badge ${rankCls}">${i+1}</div>
         <div class="avatar" style="background:${avatarStyleBg(s.name)}">${avatarHtml(s.name)}</div>
         <div class="who">
-          <div class="name">${escapeHtml(s.name)} ${i===0?'👑':''} <span class="badges">${badge?`<span class="badge">${badge}</span>`:''}</span></div>
-          <div class="sub">${s.finished} books · ${s.pages.toLocaleString()} pages</div>
+          <div class="name">${escapeHtml(s.name)} ${i===0?'👑':''} ${s.streakCount>1?`<span class="streak">🔥${s.streakCount}</span>`:''} <span class="badges">${badge?`<span class="badge">${badge}</span>`:''}</span></div>
+          <div class="sub">${s.finished} books · ${s.pages.toLocaleString()} pages all-time</div>
           <div class="mini-progress"><div class="mini-progress-fill" style="width:${pct}%;"></div></div>
         </div>
         <div>
           <div class="big-num">${val.toLocaleString()}</div>
-          <div class="big-label">${leaderboardMetric}</div>
+          <div class="big-label">${unitLabel}</div>
         </div>
       </div>`;
     }).join('');
@@ -602,7 +731,13 @@ function render(prevIds){
       const spines = list.map(b=>{
         const basis = b.totalPages || b.pagesRead;
         const h = Math.max(34, Math.min(72, 30 + basis/12));
-        return `<div class="spine ${b.finished?'':'reading'}" style="height:${h}px;background:${colorFor(b.title)}" title="${escapeHtml(b.title)} — ${b.pagesRead}${b.totalPages?'/'+b.totalPages:''}pg${b.finished?' (finished)':' (reading)'}">
+        const coverKey = b.title.trim().toLowerCase();
+        const coverUrl = covers[coverKey];
+        const label = `${escapeHtml(b.title)} — ${b.pagesRead}${b.totalPages?'/'+b.totalPages:''}pg${b.finished?' (finished)':' (reading)'}`;
+        if(coverUrl){
+          return `<div class="spine cover-spine ${b.finished?'':'reading'}" style="height:${h}px;" title="${label}"><img src="${coverUrl}" alt="${escapeHtml(b.title)}"></div>`;
+        }
+        return `<div class="spine ${b.finished?'':'reading'}" style="height:${h}px;background:${colorFor(b.title)}" title="${label}">
           <div class="spine-title">${escapeHtml(b.title.length>18?b.title.slice(0,18)+'…':b.title)}</div>
         </div>`;
       }).join('');
@@ -612,6 +747,51 @@ function render(prevIds){
         <div class="shelf">${spines}</div>
       </div>`;
     }).join('');
+
+    // fetch missing cover art in the background, one title at a time, non-blocking
+    [...new Set(books.map(b=>b.title))].forEach(t => fetchCoverForTitle(t));
+  }
+
+  // Manage entries — edit prefills the update form, delete removes it
+  const manageEl = document.getElementById('manageList');
+  if(books.length === 0){
+    manageEl.innerHTML = `<div class="empty-note">Nothing to manage yet.</div>`;
+  } else {
+    const sorted = [...books].sort((a,b)=> new Date(b.updatedAt) - new Date(a.updatedAt));
+    manageEl.innerHTML = sorted.map(b=>`
+      <div class="manage-row">
+        <div class="manage-info">
+          <b>${escapeHtml(b.name)}</b> — ${escapeHtml(b.title)}
+          <span>page ${b.pagesRead}${b.totalPages?'/'+b.totalPages:''} · ${b.finished?'finished':'reading'}</span>
+        </div>
+        <div class="manage-actions">
+          <button class="btn-edit" data-id="${b.id}">Edit</button>
+          <button class="btn-delete" data-id="${b.id}">Delete</button>
+        </div>
+      </div>`).join('');
+
+    manageEl.querySelectorAll('.btn-edit').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const b = books.find(x=>x.id === btn.dataset.id);
+        if(!b) return;
+        editingId = b.id;
+        document.getElementById('name').value = b.name;
+        document.getElementById('title').value = b.title;
+        document.getElementById('current').value = b.pagesRead;
+        document.getElementById('total').value = b.totalPages || '';
+        document.getElementById('name').scrollIntoView({behavior:'smooth', block:'center'});
+        document.getElementById('msg').style.color = 'var(--sage)';
+        document.getElementById('msg').textContent = 'Editing — adjust the details and hit Update.';
+      });
+    });
+    manageEl.querySelectorAll('.btn-delete').forEach(btn=>{
+      btn.addEventListener('click', async ()=>{
+        if(!confirm('Delete this entry? This cannot be undone.')) return;
+        if(editingId === btn.dataset.id) editingId = null;
+        books = books.filter(x=>x.id !== btn.dataset.id);
+        await db.ref('books').set(JSON.stringify(books));
+      });
+    });
   }
 }
 
@@ -702,29 +882,55 @@ document.getElementById('addBtn').addEventListener('click', async ()=>{
   const btn = document.getElementById('addBtn');
   btn.disabled = true; btn.textContent = 'Updating...';
 
-  const key = (n,t)=> n.toLowerCase()+'|'+t.toLowerCase();
-  let existing = books.find(b => !b.finished && key(b.name,b.title) === key(name,title));
+  // Work on a clone — never mutate the shared `books` array directly here.
+  // The real-time listener needs the *original* array intact to correctly
+  // detect what changed (for confetti / "just updated" highlights) once
+  // Firebase confirms the write.
+  const updatedBooks = books.map(b => ({...b}));
   const now = new Date().toISOString();
+  const key = (n,t)=> n.toLowerCase()+'|'+t.toLowerCase();
 
-  if(existing){
-    existing.pagesRead = current;
-    if(total) existing.totalPages = total;
-    existing.updatedAt = now;
-    existing.finished = existing.totalPages ? current >= existing.totalPages : false;
+  // If this came from "Edit" in Manage Entries, target that exact book by ID
+  // so we update it even if it's already finished — otherwise fall back to
+  // matching an in-progress book with the same reader + title.
+  let target = editingId ? updatedBooks.find(b => b.id === editingId) : null;
+  if(!target){
+    target = updatedBooks.find(b => !b.finished && key(b.name,b.title) === key(name,title));
+  }
+
+  const prevPages = target ? target.pagesRead : 0;
+  const delta = Math.max(0, current - prevPages);
+
+  if(target){
+    target.name = name;
+    target.title = title;
+    target.pagesRead = current;
+    if(total) target.totalPages = total;
+    target.updatedAt = now;
+    target.finished = target.totalPages ? current >= target.totalPages : false;
   } else {
-    books.push({
+    target = {
       id: Date.now()+'-'+Math.random().toString(36).slice(2),
       name, title, pagesRead: current, totalPages: total,
       finished: total ? current >= total : false,
       createdAt: now, updatedAt: now
-    });
+    };
+    updatedBooks.push(target);
   }
 
+  const nameKey = name.trim().toLowerCase();
+  if(delta > 0) updateStreak(nameKey);
+
   try{
-    await db.ref('books').set(JSON.stringify(books));
+    await db.ref('books').set(JSON.stringify(updatedBooks));
+    if(delta > 0){
+      await db.ref('history').push({ name, title, delta, timestamp: now });
+      await db.ref('streaks').set(JSON.stringify(streaks));
+    }
     msg.style.color = 'var(--sage)';
-    msg.textContent = existing && existing.finished ? `🎉 ${name} finished "${title}"!` : `Updated ${name}'s progress in "${title}".`;
+    msg.textContent = target.finished ? `🎉 ${name} finished "${title}"!` : `Updated ${name}'s progress in "${title}".`;
     currentEl.value = '';
+    editingId = null;
   }catch(e){
     msg.style.color = 'var(--brick)';
     msg.textContent = "Couldn't save — check your connection and try again.";
@@ -758,11 +964,48 @@ document.getElementById('metricPagesBtn').addEventListener('click', ()=>{
   render(null);
 });
 
+document.getElementById('periodAllBtn').addEventListener('click', ()=>{
+  leaderboardPeriod = 'all';
+  document.getElementById('periodAllBtn').classList.add('active');
+  document.getElementById('periodMonthBtn').classList.remove('active');
+  render(null);
+});
+document.getElementById('periodMonthBtn').addEventListener('click', ()=>{
+  leaderboardPeriod = 'month';
+  document.getElementById('periodMonthBtn').classList.add('active');
+  document.getElementById('periodAllBtn').classList.remove('active');
+  render(null);
+});
+
+document.getElementById('exportBtn').addEventListener('click', ()=>{
+  const rows = [['Reader','Title','Pages Read','Total Pages','Finished','Last Updated']];
+  for(const b of books){
+    rows.push([b.name, b.title, b.pagesRead, b.totalPages||'', b.finished?'Yes':'No', b.updatedAt]);
+  }
+  const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv], {type:'text/csv'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'family-shelf-export.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+});
+
+window.addEventListener('online', ()=> document.getElementById('offlineBanner').classList.remove('show'));
+window.addEventListener('offline', ()=> document.getElementById('offlineBanner').classList.add('show'));
+if(!navigator.onLine) document.getElementById('offlineBanner').classList.add('show');
+
 document.getElementById('resetBtn').addEventListener('click', async ()=>{
   if(!isConfigured) return;
   if(!confirm('Clear every logged book for the whole family? This cannot be undone.')) return;
   books = [];
+  streaks = {};
+  history = [];
+  editingId = null;
   await db.ref('books').set(JSON.stringify(books));
+  await db.ref('streaks').set(JSON.stringify(streaks));
+  await db.ref('history').set(null);
 });
 
 function setConnBar(state){
@@ -777,7 +1020,10 @@ function attachDataListeners(){
   db.ref('books').on('value', (snap)=>{
     const raw = snap.val();
     const prevIds = new Set(books.map(b=>b.id+':'+b.pagesRead));
+    const prevFinishedIds = new Set(books.filter(b=>b.finished).map(b=>b.id));
     books = raw ? JSON.parse(raw) : [];
+    const newlyFinished = books.some(b => b.finished && !prevFinishedIds.has(b.id));
+    if(newlyFinished && prevIds.size > 0) launchConfetti();
     render(prevIds.size ? prevIds : null);
   }, (err)=>{
     setConnBar('bad');
@@ -793,6 +1039,24 @@ function attachDataListeners(){
   db.ref('stakes').on('value', (snap)=>{
     const raw = snap.val();
     stakes = raw ? JSON.parse(raw) : [];
+    render(null);
+  });
+
+  db.ref('covers').on('value', (snap)=>{
+    const raw = snap.val();
+    covers = raw ? JSON.parse(raw) : {};
+    render(null);
+  });
+
+  db.ref('streaks').on('value', (snap)=>{
+    const raw = snap.val();
+    streaks = raw ? JSON.parse(raw) : {};
+    render(null);
+  });
+
+  db.ref('history').on('value', (snap)=>{
+    const raw = snap.val();
+    history = raw ? Object.values(raw) : [];
     render(null);
   });
 }
