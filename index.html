@@ -366,6 +366,10 @@
 
   <section>
     <div class="section-title">🎉 The Stakes</div>
+    <div class="metric-toggle" id="stakesPeriodToggle">
+      <button data-period="week" id="stakesWeekBtn" class="active">This Week</button>
+      <button data-period="month" id="stakesMonthBtn">This Month</button>
+    </div>
     <div class="stakes-grid" id="stakesGrid"></div>
     <div class="add-stake-row">
       <input id="stakeInput" placeholder="e.g. Picks the restaurant" autocomplete="off">
@@ -509,7 +513,7 @@ const REQUIRE_AUTH = true;
    using the app normally, but isn't a hard security wall
    against someone deliberately editing the page's code.
    ====================================================== */
-const OWNER_EMAIL = "marcus.beard09@gmail.com";
+const OWNER_EMAIL = "YOUR_EMAIL@gmail.com";
 
 const SPINE_COLORS = ['#A63D40','#D9A441','#7C9473','#4A6FA5','#8C5E9C','#C97B4A'];
 const MILESTONES = [
@@ -527,6 +531,7 @@ let streaks = {};
 let history = [];
 let leaderboardMetric = 'pages';
 let leaderboardPeriod = 'all';
+let stakesPeriod = 'week';
 let coverFetchAttempted = {};
 let editingId = null;
 
@@ -670,6 +675,22 @@ function monthlyPagesByPerson(){
   return map;
 }
 
+function startOfWeekUTC(){
+  const now = new Date();
+  const day = now.getUTCDay(); // 0 = Sunday
+  return Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - day);
+}
+function weeklyPagesByPerson(){
+  const start = startOfWeekUTC();
+  const map = {};
+  for(const h of history){
+    if(!h.timestamp) continue;
+    if(new Date(h.timestamp).getTime() < start) continue;
+    map[h.uid] = (map[h.uid]||0) + h.delta;
+  }
+  return map;
+}
+
 function render(prevIds){
   const grouped = byPerson();
   const uids = Object.keys(grouped);
@@ -683,13 +704,14 @@ function render(prevIds){
   document.getElementById('titleList').innerHTML = titles.map(t=>`<option value="${escapeHtml(t)}">`).join('');
 
   const monthly = monthlyPagesByPerson();
+  const weekly = weeklyPagesByPerson();
   const stats = uids.map(uid=>{
     const list = grouped[uid];
     const name = resolveName(uid, list[0] && list[0].name);
     const pages = list.reduce((s,b)=>s+b.pagesRead,0);
     const finished = list.filter(b=>b.finished).length;
     const streak = streaks[uid];
-    return {uid, name, pages, finished, monthPages: monthly[uid] || 0, streakCount: streak ? streak.count : 0};
+    return {uid, name, pages, finished, monthPages: monthly[uid] || 0, weekPages: weekly[uid] || 0, streakCount: streak ? streak.count : 0};
   }).sort((a,b)=>b.pages - a.pages);
 
   const podiumEl = document.getElementById('podium');
@@ -749,21 +771,31 @@ function render(prevIds){
     }).join('');
   }
 
-  // Stakes — "X is leading!" prize cards, tied to the overall pages leader
+  // Stakes — "X is leading!" prize cards, tied to the leader for the selected period
   const stakesEl = document.getElementById('stakesGrid');
-  const leader = stats[0];
-  if(!leader || stakes.length === 0){
-    stakesEl.innerHTML = `<div class="empty-note" style="width:100%;">${stakes.length===0 ? 'Add a stake below (like picks the restaurant) and whoever is leading gets it.' : 'No progress logged yet.'}</div>`;
+  const periodLabel = stakesPeriod === 'week' ? 'this week' : 'this month';
+  const periodStats = [...stats].sort((a,b)=>{
+    const av = stakesPeriod === 'week' ? a.weekPages : a.monthPages;
+    const bv = stakesPeriod === 'week' ? b.weekPages : b.monthPages;
+    return bv - av;
+  });
+  const stakesLeader = periodStats[0];
+  const stakesLeaderVal = stakesLeader ? (stakesPeriod === 'week' ? stakesLeader.weekPages : stakesLeader.monthPages) : 0;
+
+  if(!stakesLeader || stakesLeaderVal === 0 || stakes.length === 0){
+    let note = 'Add a stake below (like picks the restaurant) and whoever is leading gets it.';
+    if(stakes.length > 0) note = `Nobody has logged pages ${periodLabel} yet.`;
+    stakesEl.innerHTML = `<div class="empty-note" style="width:100%;">${note}</div>`;
   } else {
-    const p = profiles[leader.uid];
+    const p = profiles[stakesLeader.uid];
     stakesEl.innerHTML = stakes.map((stake, idx)=>`
       <div class="stake-card">
         <button class="stake-remove" data-idx="${idx}" title="Remove this stake">✕</button>
         ${p && p.photoURL
-          ? `<img class="stake-avatar" src="${p.photoURL}" alt="${escapeHtml(leader.name)}">`
-          : `<div class="stake-avatar-fallback" style="background:${colorFor(leader.name)}">${initials(leader.name)}</div>`}
-        <div class="stake-lead">${escapeHtml(leader.name)} is leading!</div>
-        <div class="stake-text">${escapeHtml(stake)}</div>
+          ? `<img class="stake-avatar" src="${p.photoURL}" alt="${escapeHtml(stakesLeader.name)}">`
+          : `<div class="stake-avatar-fallback" style="background:${colorFor(stakesLeader.name)}">${initials(stakesLeader.name)}</div>`}
+        <div class="stake-lead">${escapeHtml(stakesLeader.name)} is leading ${periodLabel}!</div>
+        <div class="stake-text">${escapeHtml(stake)} · ${stakesLeaderVal.toLocaleString()}p</div>
       </div>`).join('');
     stakesEl.querySelectorAll('.stake-remove').forEach(btn=>{
       btn.addEventListener('click', async ()=>{
@@ -841,7 +873,7 @@ function render(prevIds){
         </div>
         <div class="manage-actions">
           ${b.uid === (currentUser && currentUser.uid) ? `<button class="btn-edit" data-id="${b.id}">Edit</button>` : ''}
-          <button class="btn-delete" data-id="${b.id}">Delete</button>
+          ${(b.uid === (currentUser && currentUser.uid) || isOwner()) ? `<button class="btn-delete" data-id="${b.id}">Delete</button>` : ''}
         </div>
       </div>`).join('');
 
@@ -861,6 +893,10 @@ function render(prevIds){
     });
     manageEl.querySelectorAll('.btn-delete').forEach(btn=>{
       btn.addEventListener('click', async ()=>{
+        const target = books.find(x=>x.id === btn.dataset.id);
+        if(!target) return;
+        const allowed = (currentUser && target.uid === currentUser.uid) || isOwner();
+        if(!allowed) return;
         if(!confirm('Delete this entry? This cannot be undone.')) return;
         if(editingId === btn.dataset.id){ editingId = null; setEditingBanner(); }
         books = books.filter(x=>x.id !== btn.dataset.id);
@@ -1104,6 +1140,19 @@ document.getElementById('periodMonthBtn').addEventListener('click', ()=>{
   leaderboardPeriod = 'month';
   document.getElementById('periodMonthBtn').classList.add('active');
   document.getElementById('periodAllBtn').classList.remove('active');
+  render(null);
+});
+
+document.getElementById('stakesWeekBtn').addEventListener('click', ()=>{
+  stakesPeriod = 'week';
+  document.getElementById('stakesWeekBtn').classList.add('active');
+  document.getElementById('stakesMonthBtn').classList.remove('active');
+  render(null);
+});
+document.getElementById('stakesMonthBtn').addEventListener('click', ()=>{
+  stakesPeriod = 'month';
+  document.getElementById('stakesMonthBtn').classList.add('active');
+  document.getElementById('stakesWeekBtn').classList.remove('active');
   render(null);
 });
 
