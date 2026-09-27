@@ -317,6 +317,16 @@
     position:fixed;top:-10px;width:8px;height:14px;pointer-events:none;z-index:9999;
     border-radius:2px;
   }
+  .firework-particle{
+    position:fixed;width:5px;height:5px;border-radius:50%;
+    pointer-events:none;z-index:9999;
+    animation:fireworkBurst 0.9s ease-out forwards;
+    box-shadow:0 0 6px currentColor;
+  }
+  @keyframes fireworkBurst{
+    0%{transform:translate(0,0) scale(1);opacity:1;}
+    100%{transform:translate(var(--dx),var(--dy)) scale(0.3);opacity:0;}
+  }
 </style>
 </head>
 <body>
@@ -390,18 +400,25 @@
   <section>
     <div class="section-title">👤 My Profile</div>
     <div class="card">
-      <div class="photo-preview">
-        <div class="avatar" id="profilePreview">?</div>
-        <div style="flex:1;">
-          <input id="profileFile" type="file" accept="image/*">
+      <div id="profileSummary" style="display:flex;align-items:center;gap:12px;">
+        <div class="avatar" id="profileSummaryAvatar" style="width:44px;height:44px;font-size:1rem;">?</div>
+        <div style="flex:1;font-weight:600;" id="profileSummaryName">—</div>
+        <button id="profileEditToggle" style="width:auto;padding:8px 14px;background:transparent;border:1px solid var(--gold);color:var(--gold);">Edit</button>
+      </div>
+      <div id="profileForm" style="display:none;margin-top:16px;">
+        <div class="photo-preview">
+          <div class="avatar" id="profilePreview">?</div>
+          <div style="flex:1;">
+            <input id="profileFile" type="file" accept="image/*">
+          </div>
         </div>
+        <div class="field">
+          <label for="profileName">Display name <span class="opt">(shown on the leaderboard)</span></label>
+          <input id="profileName" placeholder="e.g. Mom, Sam, Grandpa..." autocomplete="off">
+        </div>
+        <button id="profileBtn">Save profile</button>
+        <div class="msg" id="profileMsg"></div>
       </div>
-      <div class="field">
-        <label for="profileName">Display name <span class="opt">(shown on the leaderboard)</span></label>
-        <input id="profileName" placeholder="e.g. Mom, Sam, Grandpa..." autocomplete="off">
-      </div>
-      <button id="profileBtn">Save profile</button>
-      <div class="msg" id="profileMsg"></div>
     </div>
   </section>
 
@@ -442,7 +459,7 @@
   </section>
 
   <footer>
-    <button class="reset-link" id="resetBtn">clear all data</button>
+    <button class="reset-link" id="resetBtn" style="display:none;">clear all data</button>
   </footer>
 </div>
 
@@ -482,6 +499,17 @@ let auth = null;
      { "rules": { ".read": true, ".write": true } }
    ====================================================== */
 const REQUIRE_AUTH = true;
+
+/* ======================================================
+   Only this email can see and use "Clear all data."
+   Replace with the Google account email you sign in with.
+   Note: this hides the button for everyone else and blocks
+   the action in the app's own code — it is not enforced by
+   Firebase's security rules, so it deters family members
+   using the app normally, but isn't a hard security wall
+   against someone deliberately editing the page's code.
+   ====================================================== */
+const OWNER_EMAIL = "marcus.beard09@gmail.com";
 
 const SPINE_COLORS = ['#A63D40','#D9A441','#7C9473','#4A6FA5','#8C5E9C','#C97B4A'];
 const MILESTONES = [
@@ -539,18 +567,57 @@ function byPerson(){
 }
 
 function launchConfetti(){
-  const colors = ['#A63D40','#D9A441','#7C9473','#4A6FA5','#C97B4A'];
-  for(let i=0;i<40;i++){
-    const piece = document.createElement('div');
-    piece.className = 'confetti-piece';
-    piece.style.left = Math.random()*100+'vw';
-    piece.style.background = colors[Math.floor(Math.random()*colors.length)];
-    piece.style.transform = `rotate(${Math.random()*360}deg)`;
-    piece.style.animation = `confettiFall ${1.6+Math.random()*1.2}s linear forwards`;
-    piece.style.animationDelay = (Math.random()*0.3)+'s';
-    document.body.appendChild(piece);
-    setTimeout(()=>piece.remove(), 3200);
+  const colors = ['#A63D40','#D9A441','#7C9473','#4A6FA5','#C97B4A','#ffffff'];
+  const waves = 3;
+  for(let w=0; w<waves; w++){
+    setTimeout(()=>{
+      for(let i=0;i<80;i++){
+        const piece = document.createElement('div');
+        piece.className = 'confetti-piece';
+        piece.style.left = Math.random()*100+'vw';
+        piece.style.background = colors[Math.floor(Math.random()*colors.length)];
+        piece.style.width = (6+Math.random()*6)+'px';
+        piece.style.height = (10+Math.random()*8)+'px';
+        piece.style.transform = `rotate(${Math.random()*360}deg)`;
+        piece.style.animation = `confettiFall ${2+Math.random()*1.5}s linear forwards`;
+        piece.style.animationDelay = (Math.random()*0.4)+'s';
+        document.body.appendChild(piece);
+        setTimeout(()=>piece.remove(), 4500);
+      }
+    }, w*400);
   }
+}
+
+function launchFireworks(){
+  const colors = ['#A63D40','#D9A441','#7C9473','#4A6FA5','#8C5E9C','#C97B4A','#ffffff'];
+  const bursts = 5;
+  for(let b=0; b<bursts; b++){
+    setTimeout(()=>{
+      const cx = 15 + Math.random()*70;
+      const cy = 12 + Math.random()*45;
+      const particles = 32;
+      for(let i=0;i<particles;i++){
+        const angle = (Math.PI*2*i)/particles + Math.random()*0.3;
+        const dist = 70 + Math.random()*70;
+        const dx = Math.cos(angle)*dist;
+        const dy = Math.sin(angle)*dist;
+        const p = document.createElement('div');
+        p.className = 'firework-particle';
+        p.style.left = cx+'vw';
+        p.style.top = cy+'vh';
+        p.style.background = colors[Math.floor(Math.random()*colors.length)];
+        p.style.setProperty('--dx', dx+'px');
+        p.style.setProperty('--dy', dy+'px');
+        document.body.appendChild(p);
+        setTimeout(()=>p.remove(), 1100);
+      }
+    }, b*280);
+  }
+}
+
+function celebrate(){
+  launchConfetti();
+  launchFireworks();
 }
 if(!document.getElementById('confettiKeyframes')){
   const style = document.createElement('style');
@@ -807,6 +874,13 @@ function setEditingBanner(){
   document.getElementById('editingBanner').style.display = editingId ? 'block' : 'none';
 }
 
+function isOwner(){
+  return !!(currentUser && currentUser.email && OWNER_EMAIL && !OWNER_EMAIL.startsWith('YOUR_') && currentUser.email.toLowerCase() === OWNER_EMAIL.toLowerCase());
+}
+function updateOwnerControls(){
+  document.getElementById('resetBtn').style.display = isOwner() ? 'inline-block' : 'none';
+}
+
 function resizeImageFile(file){
   return new Promise((resolve, reject)=>{
     const reader = new FileReader();
@@ -846,11 +920,29 @@ function renderProfilePreview(){
   }
   document.getElementById('loggingAsLine').textContent = name;
 
+  // compact summary view
+  const summaryAvatar = document.getElementById('profileSummaryAvatar');
+  if(p && p.photoURL){
+    summaryAvatar.style.background = 'transparent';
+    summaryAvatar.innerHTML = `<img src="${p.photoURL}" alt="">`;
+  } else {
+    summaryAvatar.style.background = colorFor(name);
+    summaryAvatar.innerHTML = initials(name);
+  }
+  document.getElementById('profileSummaryName').textContent = name;
+
   const whoami = document.getElementById('whoami');
   if(whoami.querySelector('#signOutBtn')){
     whoami.firstChild.textContent = `Signed in as ${name} · `;
   }
 }
+
+document.getElementById('profileEditToggle').addEventListener('click', ()=>{
+  const form = document.getElementById('profileForm');
+  const isOpen = form.style.display !== 'none';
+  form.style.display = isOpen ? 'none' : 'block';
+  document.getElementById('profileEditToggle').textContent = isOpen ? 'Edit' : 'Close';
+});
 
 document.getElementById('profileBtn').addEventListener('click', async ()=>{
   const msg = document.getElementById('profileMsg');
@@ -878,6 +970,8 @@ document.getElementById('profileBtn').addEventListener('click', async ()=>{
     fileEl.value = '';
     renderProfilePreview();
     render(null);
+    document.getElementById('profileForm').style.display = 'none';
+    document.getElementById('profileEditToggle').textContent = 'Edit';
   }catch(e){
     msg.style.color = 'var(--brick)';
     msg.textContent = "Couldn't save — check your connection and try again.";
@@ -1034,6 +1128,7 @@ if(!navigator.onLine) document.getElementById('offlineBanner').classList.add('sh
 
 document.getElementById('resetBtn').addEventListener('click', async ()=>{
   if(!isConfigured) return;
+  if(!isOwner()) return;
   if(!confirm('Clear every logged book for the whole family? This cannot be undone.')) return;
   books = [];
   streaks = {};
@@ -1058,9 +1153,22 @@ function attachDataListeners(){
     const raw = snap.val();
     const prevIds = new Set(books.map(b=>b.id+':'+b.pagesRead));
     const prevFinishedIds = new Set(books.filter(b=>b.finished).map(b=>b.id));
+    const prevTotals = {};
+    for(const b of books){ prevTotals[b.uid] = (prevTotals[b.uid]||0) + b.pagesRead; }
+
     books = raw ? JSON.parse(raw) : [];
+
     const newlyFinished = books.some(b => b.finished && !prevFinishedIds.has(b.id));
-    if(newlyFinished && prevIds.size > 0) launchConfetti();
+
+    const newTotals = {};
+    for(const b of books){ newTotals[b.uid] = (newTotals[b.uid]||0) + b.pagesRead; }
+    let milestoneHit = false;
+    for(const uid in newTotals){
+      const prev = prevTotals[uid] || 0;
+      if(Math.floor(newTotals[uid]/1000) > Math.floor(prev/1000)) milestoneHit = true;
+    }
+
+    if(prevIds.size > 0 && (newlyFinished || milestoneHit)) celebrate();
     render(prevIds.size ? prevIds : null);
   }, (err)=>{
     setConnBar('bad');
@@ -1164,6 +1272,7 @@ if(!isConfigured){
       if(user){
         currentUser = user;
         showApp(user);
+        updateOwnerControls();
         if(!listenersAttached){ attachDataListeners(); listenersAttached = true; }
         await ensureProfile(user);
         renderProfilePreview();
