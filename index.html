@@ -656,7 +656,11 @@ function hashName(str){
 function colorFor(str){ return SPINE_COLORS[hashName(str) % SPINE_COLORS.length]; }
 function initials(name){ return name.trim().split(/\s+/).map(w=>w[0]).slice(0,2).join('').toUpperCase(); }
 function badgeFor(totalPages){ const m = MILESTONES.find(m => totalPages >= m.p); return m ? m.badge : ''; }
-function escapeHtml(str){ const d = document.createElement('div'); d.textContent = str; return d.innerHTML; }
+function escapeHtml(str){   // safe for text AND for values inside "quoted" attributes
+  return String(str == null ? '' : str)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
 function timeAgo(iso){
   const s = Math.floor((Date.now() - new Date(iso).getTime())/1000);
   if(s < 10) return 'just now';
@@ -670,8 +674,8 @@ function formatDateTime(iso){
 }
 function avatarHtml(uid, fallbackName){
   const p = profiles[uid];
-  if(p && p.photoURL) return `<img src="${p.photoURL}" alt="${escapeHtml(resolveName(uid, fallbackName))}">`;
-  return initials(resolveName(uid, fallbackName));
+  if(p && p.photoURL) return `<img src="${escapeHtml(p.photoURL)}" alt="${escapeHtml(resolveName(uid, fallbackName))}">`;
+  return escapeHtml(initials(resolveName(uid, fallbackName)));
 }
 function avatarStyleBg(uid, fallbackName){
   const p = profiles[uid];
@@ -1066,15 +1070,24 @@ function todayStr(){
 }
 function daysBetween(a,b){ return Math.round((new Date(b) - new Date(a)) / 86400000); }
 
-function updateStreak(nameKey){
+// Apply "this person read today" to the saved streaks. Pure: works on whatever copy it is given.
+function applyStreak(all, uid){
   const today = todayStr();
-  const s = streaks[nameKey];
-  if(!s){ streaks[nameKey] = {count:1, lastDate:today}; return; }
-  if(s.lastDate === today) return; // already logged today
+  const s = all[uid];
+  if(!s){ all[uid] = {count:1, lastDate:today}; return all; }
+  if(s.lastDate === today) return all; // already logged today
   const gap = daysBetween(s.lastDate, today);
-  if(gap === 1){ s.count = (s.count||1) + 1; }
-  else { s.count = 1; }
+  s.count = (gap === 1) ? (Number(s.count) || 1) + 1 : 1;
   s.lastDate = today;
+  return all;
+}
+// A streak only counts while it is alive: read today or yesterday. Otherwise it is over.
+function activeStreak(s){
+  if(!s || !s.lastDate) return 0;
+  return daysBetween(s.lastDate, todayStr()) <= 1 ? (Number(s.count) || 0) : 0;
+}
+function parseStreaks(raw){
+  try{ const v = raw ? JSON.parse(raw) : {}; return (v && typeof v === 'object' && !Array.isArray(v)) ? v : {}; }catch(e){ return {}; }
 }
 
 /* ---------- Reading-log helpers ---------- */
@@ -1087,6 +1100,22 @@ function startOfWeekLocal(){
   return new Date(n.getFullYear(), n.getMonth(), n.getDate() - n.getDay()).getTime(); // Sunday 00:00, local
 }
 function normTitle(t){ return String(t||'').trim().toLowerCase(); }
+
+// Shared lists are stored as one JSON text. These read them defensively, so a stray or edited
+// value can never break the page: numbers are forced to numbers, text to text.
+function cleanBook(b){
+  const n = v => { const x = Number(v); return Number.isFinite(x) ? x : 0; };
+  return { ...b, id: String(b.id), uid: String(b.uid || ''), name: String(b.name || ''), title: String(b.title || ''),
+           pagesRead: n(b.pagesRead), totalPages: n(b.totalPages) || null, finished: !!b.finished };
+}
+function parseList(raw){          // -> array of books, or null if the saved text is unreadable
+  if(!raw) return [];
+  try{ const v = JSON.parse(raw); return Array.isArray(v) ? v.filter(x => x && typeof x === 'object').map(cleanBook) : null; }
+  catch(e){ return null; }
+}
+function parseStakes(raw){
+  try{ const v = raw ? JSON.parse(raw) : []; return Array.isArray(v) ? v.map(String) : []; }catch(e){ return []; }
+}
 
 // A log entry counts unless it points at a book that has since been deleted.
 // (Older entries have no bookId; those always count.)
@@ -1170,7 +1199,7 @@ function render(prevIds){
     const pages = list.reduce((s,b)=>s+b.pagesRead,0);
     const finished = list.filter(b=>b.finished).length;
     const streak = streaks[uid];
-    return {uid, name, pages, finished, monthPages: monthly[uid] || 0, weekPages: weekly[uid] || 0, monthFinished: monthFin[uid] || 0, streakCount: streak ? streak.count : 0};
+    return {uid, name, pages, finished, monthPages: monthly[uid] || 0, weekPages: weekly[uid] || 0, monthFinished: monthFin[uid] || 0, streakCount: activeStreak(streak)};
   }).sort((a,b)=>b.pages - a.pages);
 
   const podiumEl = document.getElementById('podium');
@@ -1187,8 +1216,8 @@ function render(prevIds){
         <div class="p-avatar-wrap">
           ${crown}
           ${p && p.photoURL
-            ? `<img class="p-avatar" src="${p.photoURL}" alt="${escapeHtml(s.name)}">`
-            : `<div class="p-avatar-fallback" style="background:${colorFor(s.name)};width:100%;height:100%;">${initials(s.name)}</div>`}
+            ? `<img class="p-avatar" src="${escapeHtml(p.photoURL)}" alt="${escapeHtml(s.name)}">`
+            : `<div class="p-avatar-fallback" style="background:${colorFor(s.name)};width:100%;height:100%;">${escapeHtml(initials(s.name))}</div>`}
         </div>
         <div class="p-rank">#${i+1}</div>
         <div class="p-name">${escapeHtml(s.name)} ${s.streakCount>1?`<span class="streak">🔥${s.streakCount}</span>`:''}</div>
@@ -1253,16 +1282,24 @@ function render(prevIds){
       <div class="stake-card">
         <button class="stake-remove" data-idx="${idx}" title="Remove this stake">✕</button>
         ${p && p.photoURL
-          ? `<img class="stake-avatar" src="${p.photoURL}" alt="${escapeHtml(stakesLeader.name)}">`
-          : `<div class="stake-avatar-fallback" style="background:${colorFor(stakesLeader.name)}">${initials(stakesLeader.name)}</div>`}
+          ? `<img class="stake-avatar" src="${escapeHtml(p.photoURL)}" alt="${escapeHtml(stakesLeader.name)}">`
+          : `<div class="stake-avatar-fallback" style="background:${colorFor(stakesLeader.name)}">${escapeHtml(initials(stakesLeader.name))}</div>`}
         <div class="stake-lead">${escapeHtml(stakesLeader.name)} is leading ${periodLabel}!</div>
         <div class="stake-text">${escapeHtml(stake)} · ${stakesLeaderVal.toLocaleString()}p</div>
       </div>`).join('');
     stakesEl.querySelectorAll('.stake-remove').forEach(btn=>{
       btn.addEventListener('click', async ()=>{
-        const idx = parseInt(btn.dataset.idx, 10);
-        stakes.splice(idx, 1);
-        await db.ref('stakes').set(JSON.stringify(stakes));
+        const text = stakes[parseInt(btn.dataset.idx, 10)];
+        if(text === undefined) return;
+        try{
+          await db.ref('stakes').transaction(raw => {
+            const list = parseStakes(raw);
+            const i = list.indexOf(text);
+            if(i === -1) return;           // someone already removed it
+            list.splice(i, 1);
+            return JSON.stringify(list);
+          });
+        }catch(e){}
       });
     });
   }
@@ -1276,7 +1313,7 @@ function render(prevIds){
       const changed = prevIds && !prevIds.has(b.id+':'+b.pagesRead);
       const pct = b.totalPages ? Math.min(100, Math.round(b.pagesRead/b.totalPages*100)) : null;
       return `
-      <div class="reading-card ${changed?'flash':''}" data-id="${b.id}">
+      <div class="reading-card ${changed?'flash':''}" data-id="${escapeHtml(b.id)}">
         <div class="reading-top">
           <div><span class="reading-who">${escapeHtml(resolveName(b.uid, b.name))}</span> <span class="reading-book">— ${escapeHtml(b.title)}</span></div>
           <div class="reading-ago">${timeAgo(b.updatedAt)}</div>
@@ -1303,7 +1340,7 @@ function render(prevIds){
         const coverUrl = covers[coverKey];
         const label = `${escapeHtml(b.title)} — ${b.pagesRead}${b.totalPages?'/'+b.totalPages:''}pg${b.finished?' (finished)':' (reading)'}`;
         if(coverUrl){
-          return `<div class="spine cover-spine ${b.finished?'':'reading'}" style="height:${h}px;" title="${label}"><img src="${coverUrl}" alt="${escapeHtml(b.title)}"></div>`;
+          return `<div class="spine cover-spine ${b.finished?'':'reading'}" style="height:${h}px;" title="${label}"><img src="${escapeHtml(coverUrl)}" alt="${escapeHtml(b.title)}"></div>`;
         }
         return `<div class="spine ${b.finished?'':'reading'}" style="height:${h}px;background:${colorFor(b.title)}" title="${label}">
           <div class="spine-title">${escapeHtml(b.title.length>18?b.title.slice(0,18)+'…':b.title)}</div>
@@ -1356,8 +1393,8 @@ function render(prevIds){
           <span>page ${b.pagesRead}${b.totalPages?'/'+b.totalPages:''} · ${b.finished?'finished':'reading'} · updated ${formatDateTime(b.updatedAt)}</span>
         </div>
         <div class="manage-actions">
-          ${b.uid === (currentUser && currentUser.uid) ? `<button class="btn-edit" data-id="${b.id}">Edit</button>` : ''}
-          ${(b.uid === (currentUser && currentUser.uid) || isOwner()) ? `<button class="btn-delete" data-id="${b.id}">Delete</button>` : ''}
+          ${b.uid === (currentUser && currentUser.uid) ? `<button class="btn-edit" data-id="${escapeHtml(b.id)}">Edit</button>` : ''}
+          ${(b.uid === (currentUser && currentUser.uid) || isOwner()) ? `<button class="btn-delete" data-id="${escapeHtml(b.id)}">Delete</button>` : ''}
         </div>
       </div>`).join('');
 
@@ -1377,24 +1414,33 @@ function render(prevIds){
     });
     manageEl.querySelectorAll('.btn-delete').forEach(btn=>{
       btn.addEventListener('click', async ()=>{
-        const target = books.find(x=>x.id === btn.dataset.id);
+        const id = btn.dataset.id;
+        const target = books.find(x=>x.id === id);
         if(!target) return;
         const allowed = (currentUser && target.uid === currentUser.uid) || isOwner();
         if(!allowed) return;
         if(!confirm('Delete this entry? This cannot be undone.')) return;
-        if(editingId === btn.dataset.id){ editingId = null; setEditingBanner(); }
+        if(editingId === id){ editingId = null; setEditingBanner(); }
+        // Remove it from the newest saved list (so nobody else's just-saved book is lost along the way)
+        let remaining = null;
+        try{
+          const res = await db.ref('books').transaction(raw => {
+            const list = parseList(raw);
+            if(list === null || !list.some(x => x.id === id)) return;   // already gone, or unreadable: leave it alone
+            remaining = list.filter(x => x.id !== id);
+            return JSON.stringify(remaining);
+          });
+          if(!res.committed || !remaining) return;
+        }catch(e){ return; }
         // Log entries that belong to this book go with it, so weekly/monthly totals stay honest
-        const remaining = books.filter(x => x.id !== target.id);
         const titleStillUsed = remaining.some(x => x.uid === target.uid && normTitle(x.title) === normTitle(target.title));
         const doomed = history.filter(h => h._key && (h.bookId
           ? h.bookId === target.id
           : (!titleStillUsed && h.uid === target.uid && normTitle(h.title) === normTitle(target.title))));
-        books = remaining;
-        await db.ref('books').set(JSON.stringify(books));
         if(doomed.length){
           const upd = {};
           doomed.forEach(h => { upd[h._key] = null; });
-          await db.ref('history').update(upd);
+          try{ await db.ref('history').update(upd); }catch(e){}
         }
       });
     });
@@ -1476,10 +1522,10 @@ function renderProfilePreview(){
   document.getElementById('profileName').value = name;
   if(p && p.photoURL){
     preview.style.background = 'transparent';
-    preview.innerHTML = `<img src="${p.photoURL}" alt="">`;
+    preview.innerHTML = `<img src="${escapeHtml(p.photoURL)}" alt="">`;
   } else {
     preview.style.background = colorFor(name);
-    preview.innerHTML = initials(name);
+    preview.textContent = initials(name);
   }
   document.getElementById('loggingAsLine').textContent = name;
 
@@ -1487,10 +1533,10 @@ function renderProfilePreview(){
   const summaryAvatar = document.getElementById('profileSummaryAvatar');
   if(p && p.photoURL){
     summaryAvatar.style.background = 'transparent';
-    summaryAvatar.innerHTML = `<img src="${p.photoURL}" alt="">`;
+    summaryAvatar.innerHTML = `<img src="${escapeHtml(p.photoURL)}" alt="">`;
   } else {
     summaryAvatar.style.background = colorFor(name);
-    summaryAvatar.innerHTML = initials(name);
+    summaryAvatar.textContent = initials(name);
   }
   document.getElementById('profileSummaryName').textContent = name;
 
@@ -1542,6 +1588,76 @@ document.getElementById('profileBtn').addEventListener('click', async ()=>{
   btn.disabled = false; btn.textContent = 'Save profile';
 });
 
+/* ---------- Saving progress ---------- */
+// Works out the result of one "Update my progress" tap, on top of whatever list is saved right now.
+// It never changes the list it is given. Used inside a database transaction, so if someone else saved a
+// moment earlier, this runs again on top of their copy instead of overwriting it.
+function applyUpdate(list, a){
+  const next = list.map(b => ({...b}));
+  const key = (u,t)=> u+'|'+t.toLowerCase();
+  // If this came from "Edit" in Manage Entries, target that exact book by ID (even if already finished);
+  // otherwise match an in-progress book with the same reader + title.
+  let target = a.editingId ? next.find(b => b.id === a.editingId && b.uid === a.uid) : null;
+  if(!target) target = next.find(b => !b.finished && key(b.uid,b.title) === key(a.uid,a.title));
+
+  // A page number can never be past the book's total - whether the total was typed now or saved earlier.
+  const knownTotal = a.total || (target && target.totalPages) || null;
+  if(knownTotal && a.current > knownTotal){
+    return { error: a.total ? "Current page can't be past the total."
+                            : "Current page can't be past this book's total of " + knownTotal.toLocaleString() + " pages." };
+  }
+
+  const prevPages = target ? target.pagesRead : 0;
+  const delta = a.current - prevPages; // negative = the page number was corrected downward
+  const wasFinishedBefore = target ? target.finished : false;
+  if(target){
+    target.title = a.title;
+    target.pagesRead = a.current;
+    if(a.total) target.totalPages = a.total;
+    target.updatedAt = a.now;
+    target.finished = target.totalPages ? a.current >= target.totalPages : false;
+    if(target.finished && !wasFinishedBefore) target.finishedAt = a.now;
+  } else {
+    const isFinished = a.total ? a.current >= a.total : false;
+    target = {
+      id: a.newId,
+      uid: a.uid, name: a.name, title: a.title, pagesRead: a.current, totalPages: a.total,
+      finished: isFinished,
+      finishedAt: isFinished ? a.now : null,
+      createdAt: a.now, updatedAt: a.now
+    };
+    next.push(target);
+  }
+  return { list: next, target, delta };
+}
+
+// Log entries that are saved but not yet confirmed by the database are kept in this device's storage and
+// re-sent (same key every time, so they can never double count) next time the app opens or comes back online.
+const PENDING_KEY = 'familyShelfPendingLog';
+function loadPending(){ try{ const v = JSON.parse(localStorage.getItem(PENDING_KEY) || '[]'); return Array.isArray(v) ? v : []; }catch(e){ return []; } }
+function savePending(list){ try{ if(list.length) localStorage.setItem(PENDING_KEY, JSON.stringify(list.slice(-25))); else localStorage.removeItem(PENDING_KEY); }catch(e){} }
+function removePending(key){ savePending(loadPending().filter(x => x.key !== key)); }
+function sendLogEntry(item){
+  return db.ref('history/' + item.key).set(item.entry).then(() => removePending(item.key));
+}
+function recordLog(entry){
+  const item = { key: '-L' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8), entry };
+  savePending(loadPending().concat([item]));
+  sendLogEntry(item).catch(() => {});   // if this fails it stays queued and is retried automatically
+}
+let flushingLog = false;
+async function flushPendingLog(){
+  if(!db || flushingLog) return;
+  const list = loadPending();
+  if(!list.length) return;
+  flushingLog = true;
+  try{ for(const item of list){ try{ await sendLogEntry(item); }catch(e){} } }
+  finally{ flushingLog = false; }
+}
+function bumpStreak(uid){
+  return db.ref('streaks').transaction(raw => JSON.stringify(applyStreak(parseStreaks(raw), uid)));
+}
+
 document.getElementById('addBtn').addEventListener('click', async ()=>{
   const titleEl = document.getElementById('title');
   const currentEl = document.getElementById('current');
@@ -1567,62 +1683,37 @@ document.getElementById('addBtn').addEventListener('click', async ()=>{
   const btn = document.getElementById('addBtn');
   btn.disabled = true; btn.textContent = 'Updating...';
 
-  // Work on a clone — never mutate the shared `books` array directly here.
-  // The real-time listener needs the *original* array intact to correctly
-  // detect what changed (for confetti / "just updated" highlights) once
-  // Firebase confirms the write.
-  const updatedBooks = books.map(b => ({...b}));
   const now = new Date().toISOString();
-  const key = (u,t)=> u+'|'+t.toLowerCase();
-
-  // If this came from "Edit" in Manage Entries, target that exact book by ID
-  // so we update it even if it's already finished — otherwise fall back to
-  // matching an in-progress book with the same reader (by uid) + title.
-  let target = editingId ? updatedBooks.find(b => b.id === editingId && b.uid === uid) : null;
-  if(!target){
-    target = updatedBooks.find(b => !b.finished && key(b.uid,b.title) === key(uid,title));
-  }
-
-  const prevPages = target ? target.pagesRead : 0;
-  const delta = current - prevPages; // negative = the page number was corrected downward
-  const wasFinishedBefore = target ? target.finished : false;
-
-  if(target){
-    target.title = title;
-    target.pagesRead = current;
-    if(total) target.totalPages = total;
-    target.updatedAt = now;
-    target.finished = target.totalPages ? current >= target.totalPages : false;
-    if(target.finished && !wasFinishedBefore) target.finishedAt = now;
-  } else {
-    const isFinished = total ? current >= total : false;
-    target = {
-      id: Date.now()+'-'+Math.random().toString(36).slice(2),
-      uid, name, title, pagesRead: current, totalPages: total,
-      finished: isFinished,
-      finishedAt: isFinished ? now : null,
-      createdAt: now, updatedAt: now
-    };
-    updatedBooks.push(target);
-  }
-
-  if(delta > 0) updateStreak(uid);
+  const args = { uid, name, title, current, total, editingId, now, newId: Date.now()+'-'+Math.random().toString(36).slice(2) };
+  let outcome = null;
 
   try{
-    await db.ref('books').set(JSON.stringify(updatedBooks));
-    if(delta !== 0){
-      const entry = { uid, name, title, bookId: target.id, delta, timestamp: now };
-      if(delta < 0) entry.kind = 'correction';
-      await db.ref('history').push(entry);
+    // The change is applied to the newest saved list inside a transaction, so two people saving at the
+    // same moment (or a phone that woke up with an old copy) can never wipe out each other's books.
+    const res = await db.ref('books').transaction(raw => {
+      const list = parseList(raw);
+      if(list === null){ outcome = { error: "The saved book list couldn't be read, so nothing was changed." }; return; }
+      outcome = applyUpdate(list, args);
+      if(outcome.error) return;               // returning nothing cancels the save
+      return JSON.stringify(outcome.list);
+    });
+
+    if(!res.committed || !outcome || outcome.error){
+      msg.style.color = 'var(--brick)';
+      msg.textContent = (outcome && outcome.error) || "Couldn't save — check your connection and try again.";
+    } else {
+      if(outcome.delta !== 0){
+        const entry = { uid, name, title, bookId: outcome.target.id, delta: outcome.delta, timestamp: now };
+        if(outcome.delta < 0) entry.kind = 'correction';
+        recordLog(entry);
+      }
+      if(outcome.delta > 0) bumpStreak(uid).catch(() => {});
+      msg.style.color = 'var(--sage)';
+      msg.textContent = outcome.target.finished ? `🎉 ${name} finished "${title}"!` : `Updated ${name}'s progress in "${title}".`;
+      currentEl.value = '';
+      editingId = null;
+      setEditingBanner();
     }
-    if(delta > 0){
-      await db.ref('streaks').set(JSON.stringify(streaks));
-    }
-    msg.style.color = 'var(--sage)';
-    msg.textContent = target.finished ? `🎉 ${name} finished "${title}"!` : `Updated ${name}'s progress in "${title}".`;
-    currentEl.value = '';
-    editingId = null;
-    setEditingBanner();
   }catch(e){
     msg.style.color = 'var(--brick)';
     msg.textContent = "Couldn't save — check your connection and try again.";
@@ -1644,9 +1735,10 @@ document.getElementById('addStakeBtn').addEventListener('click', async ()=>{
   const input = document.getElementById('stakeInput');
   const text = input.value.trim();
   if(!text) return;
-  stakes.push(text);
-  await db.ref('stakes').set(JSON.stringify(stakes));
-  input.value = '';
+  try{
+    await db.ref('stakes').transaction(raw => { const list = parseStakes(raw); list.push(text); return JSON.stringify(list); });
+    input.value = '';
+  }catch(e){}
 });
 document.getElementById('stakeInput').addEventListener('keydown', (e)=>{
   if(e.key === 'Enter') document.getElementById('addStakeBtn').click();
@@ -1706,7 +1798,7 @@ document.getElementById('exportBtn').addEventListener('click', ()=>{
   URL.revokeObjectURL(url);
 });
 
-window.addEventListener('online', ()=> document.getElementById('offlineBanner').classList.remove('show'));
+window.addEventListener('online', ()=>{ document.getElementById('offlineBanner').classList.remove('show'); flushPendingLog(); });
 window.addEventListener('offline', ()=> document.getElementById('offlineBanner').classList.add('show'));
 if(!navigator.onLine) document.getElementById('offlineBanner').classList.add('show');
 
@@ -1759,16 +1851,37 @@ function setConnBar(state){
   else { el.className='connbar'; el.textContent = ''; }
 }
 
+const listenerRefs = [];
+function listen(path, cb, errCb){
+  const r = db.ref(path);
+  listenerRefs.push(r);
+  r.on('value', cb, errCb);
+}
+function detachDataListeners(){ listenerRefs.forEach(r => r.off()); listenerRefs.length = 0; }
+function clearLocalData(){
+  books = []; profiles = {}; stakes = []; covers = {}; streaks = {}; history = []; editingId = null;
+  setEditingBanner();
+}
+function isPermissionDenied(err){ return /permission[_ ]denied/i.test(String((err && (err.code || err.message)) || '')); }
+let accessDeniedHandled = false;
+function handleAccessDenied(){
+  if(accessDeniedHandled || !auth) return;
+  accessDeniedHandled = true;
+  const note = "This Google account isn't on the family list yet. Ask the person who runs this shelf to add you, then sign in again.";
+  const show = () => { showGate(); document.getElementById('gateMsg').textContent = note; };
+  auth.signOut().then(show, show);
+}
+
 function attachDataListeners(){
   // Real-time listeners — fire immediately with current data, then on every change.
-  db.ref('books').on('value', (snap)=>{
+  listen('books', (snap)=>{
     const raw = snap.val();
     const prevIds = new Set(books.map(b=>b.id+':'+b.pagesRead));
     const prevFinishedIds = new Set(books.filter(b=>b.finished).map(b=>b.id));
     const prevTotals = {};
     for(const b of books){ prevTotals[b.uid] = (prevTotals[b.uid]||0) + b.pagesRead; }
 
-    books = raw ? JSON.parse(raw) : [];
+    books = parseList(raw) || [];
 
     const newlyFinishedBooks = books.filter(b => b.finished && !prevFinishedIds.has(b.id));
 
@@ -1790,37 +1903,40 @@ function attachDataListeners(){
     }
     render(prevIds.size ? prevIds : null);
   }, (err)=>{
+    if(REQUIRE_AUTH && isPermissionDenied(err)){ handleAccessDenied(); return; }
     setConnBar('bad');
     document.getElementById('connbar').textContent = '🔴 connection error — check Firebase rules/config';
   });
 
-  db.ref('profiles').on('value', (snap)=>{
+  listen('profiles', (snap)=>{
     profiles = snap.val() || {};
     renderProfilePreview();
     render(null);
   });
 
-  db.ref('stakes').on('value', (snap)=>{
+  listen('stakes', (snap)=>{
     const raw = snap.val();
-    stakes = raw ? JSON.parse(raw) : [];
+    stakes = parseStakes(raw);
     render(null);
   });
 
-  db.ref('covers').on('value', (snap)=>{
+  listen('covers', (snap)=>{
     const raw = snap.val();
     covers = raw ? JSON.parse(raw) : {};
     render(null);
   });
 
-  db.ref('streaks').on('value', (snap)=>{
+  listen('streaks', (snap)=>{
     const raw = snap.val();
-    streaks = raw ? JSON.parse(raw) : {};
+    streaks = parseStreaks(raw);
     render(null);
   });
 
-  db.ref('history').on('value', (snap)=>{
+  listen('history', (snap)=>{
     const raw = snap.val();
-    history = raw ? Object.entries(raw).map(([k, v]) => ({...v, _key: k})) : [];
+    history = raw ? Object.entries(raw).filter(([k, v]) => v && typeof v === 'object').map(([k, v]) => ({
+      ...v, _key: k, uid: String(v.uid || ''), name: String(v.name || ''), title: String(v.title || ''), delta: Number(v.delta) || 0
+    })) : [];
     render(null);
   });
 }
@@ -1889,15 +2005,26 @@ if(!isConfigured){
     let listenersAttached = false;
     auth.onAuthStateChanged(async (user)=>{
       if(user){
+        accessDeniedHandled = false;
         currentUser = user;
         showApp(user);
         updateOwnerControls();
         if(!listenersAttached){ attachDataListeners(); listenersAttached = true; }
-        await ensureProfile(user);
+        try{
+          await ensureProfile(user);
+          flushPendingLog();
+        }catch(e){
+          if(isPermissionDenied(e)){ handleAccessDenied(); return; }
+        }
         renderProfilePreview();
         render(null);
       } else {
+        // Signed out: stop listening and forget the family's data, so signing back in starts fresh and live
         currentUser = null;
+        detachDataListeners();
+        listenersAttached = false;
+        clearLocalData();
+        render(null);
         showGate();
       }
     });
