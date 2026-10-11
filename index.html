@@ -311,27 +311,106 @@
   .btn-edit{background:transparent;border:1px solid var(--gold);color:var(--gold);}
   .btn-delete{background:transparent;border:1px solid var(--brick);color:var(--brick);}
 
+  .activity-list{display:flex;flex-direction:column;gap:6px;max-height:340px;overflow-y:auto;}
+  .activity-row{
+    background:var(--ink-2);border:1px solid rgba(244,235,217,0.08);border-radius:8px;
+    padding:9px 12px;display:flex;align-items:center;gap:10px;font-size:0.82rem;
+  }
+  .activity-info{flex:1;min-width:0;}
+  .activity-info b{color:var(--parchment);}
+  .activity-delta{color:var(--sage);font-family:'IBM Plex Mono',monospace;font-weight:600;white-space:nowrap;}
+  .activity-delta.neg{color:var(--brick);}
+  .activity-time{color:var(--parchment-2);opacity:0.55;font-size:0.72rem;white-space:nowrap;}
+
   .export-btn{background:transparent;border:1px solid rgba(244,235,217,0.25);color:var(--parchment-2);margin-top:10px;}
 
-  .confetti-piece{
-    position:fixed;top:-10px;width:8px;height:14px;pointer-events:none;z-index:9999;
-    border-radius:2px;
+  /* Celebration show */
+  .celebrate-flash{
+    position:fixed;inset:0;pointer-events:none;z-index:10001;
+    background:radial-gradient(circle at 50% 45%, rgba(255,236,170,0.95), rgba(217,164,65,0.55) 45%, rgba(217,164,65,0) 75%);
+    animation:celebrateFlash 1.1s ease-out forwards;
   }
-  .firework-particle{
-    position:fixed;width:5px;height:5px;border-radius:50%;
-    pointer-events:none;z-index:9999;
-    animation:fireworkBurst 0.9s ease-out forwards;
-    box-shadow:0 0 6px currentColor;
+  @keyframes celebrateFlash{0%{opacity:0;}12%{opacity:1;}100%{opacity:0;}}
+  .celebrate-banner{
+    position:fixed;left:0;right:0;top:5%;z-index:10002;pointer-events:none;
+    text-align:center;padding:0 16px;
+    animation:celebrateBanner var(--banner-ms,7000ms) ease-in-out forwards;
   }
-  @keyframes fireworkBurst{
-    0%{transform:translate(0,0) scale(1);opacity:1;}
-    100%{transform:translate(var(--dx),var(--dy)) scale(0.3);opacity:0;}
+  .celebrate-banner .cb-title{
+    font-family:'Fraunces',serif;font-weight:700;line-height:1.05;letter-spacing:-0.01em;
+    font-size:clamp(2.2rem,11vw,4.6rem);
+    background:linear-gradient(180deg,#fff6cf 0%,#ffd45c 45%,#d9a441 100%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    filter:drop-shadow(0 4px 0 rgba(74,46,31,0.9)) drop-shadow(0 0 22px rgba(255,200,70,0.85));
   }
+  .celebrate-banner .cb-sub{
+    margin-top:12px;font-size:clamp(1rem,4.6vw,1.5rem);font-weight:600;color:#fff;
+    text-shadow:0 2px 8px rgba(0,0,0,0.8),0 0 18px rgba(0,0,0,0.6);
+  }
+  .celebrate-banner .cb-emoji{font-size:clamp(2rem,9vw,3.4rem);margin-bottom:6px;
+    animation:celebrateWiggle 0.7s ease-in-out infinite alternate;}
+  @keyframes celebrateBanner{
+    0%{opacity:0;transform:scale(0.2) rotate(-6deg);}
+    8%{opacity:1;transform:scale(1.22) rotate(2deg);}
+    14%{transform:scale(0.96) rotate(-1deg);}
+    20%{transform:scale(1) rotate(0deg);}
+    88%{opacity:1;transform:scale(1.03);}
+    100%{opacity:0;transform:scale(1.15) translateY(-20px);}
+  }
+  @keyframes celebrateWiggle{from{transform:rotate(-8deg) scale(1);}to{transform:rotate(8deg) scale(1.12);}}
+  @keyframes celebrateBannerStatic{0%{opacity:0;}10%{opacity:1;}90%{opacity:1;}100%{opacity:0;}}
+  @media (prefers-reduced-motion: reduce){
+    .celebrate-flash{display:none;}
+    .celebrate-banner{animation-name:celebrateBannerStatic;}
+    .celebrate-banner .cb-emoji{animation:none;}
+  }
+
+  .cb-medal{position:relative;width:clamp(96px,30vw,140px);height:clamp(96px,30vw,140px);margin:0 auto 12px;}
+  .cb-rays{
+    position:absolute;left:50%;top:50%;width:min(135vw,680px);aspect-ratio:1;z-index:-1;
+    transform:translate(-50%,-50%);
+    background:repeating-conic-gradient(from 0deg, rgba(255,214,102,0.60) 0deg 7deg, rgba(255,214,102,0) 7deg 20deg);
+    -webkit-mask-image:radial-gradient(circle, #000 0%, rgba(0,0,0,0.85) 30%, rgba(0,0,0,0) 68%);
+    mask-image:radial-gradient(circle, #000 0%, rgba(0,0,0,0.85) 30%, rgba(0,0,0,0) 68%);
+    animation:cbSpin 16s linear infinite;
+  }
+  .cb-face{
+    position:relative;width:100%;height:100%;border-radius:50%;overflow:hidden;
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Fraunces',serif;font-weight:700;font-size:2.6rem;color:#1a1a1a;
+    border:5px solid #ffd45c;
+    box-shadow:0 0 0 4px rgba(74,46,31,0.9),0 0 38px 12px rgba(255,200,70,0.85);
+    animation:cbPulse 0.9s ease-in-out infinite alternate;
+  }
+  .cb-face img{width:100%;height:100%;object-fit:cover;display:block;}
+  .celebrate-banner .cb-stats{
+    margin-top:10px;display:inline-block;padding:6px 16px;border-radius:999px;
+    background:rgba(0,0,0,0.55);border:1px solid rgba(255,212,92,0.7);
+    color:#ffe9a8;font-weight:700;font-size:clamp(0.85rem,3.8vw,1.1rem);white-space:pre;
+    text-shadow:0 1px 4px rgba(0,0,0,0.8);
+  }
+  @keyframes cbSpin{to{transform:translate(-50%,-50%) rotate(360deg);}}
+  @keyframes cbPulse{from{transform:scale(1);}to{transform:scale(1.07);}}
+  .celebrate-shake{animation:celebrateShake 0.6s cubic-bezier(.36,.07,.19,.97);}
+  @keyframes celebrateShake{
+    10%,90%{transform:translate3d(-2px,1px,0);}
+    20%,80%{transform:translate3d(4px,-2px,0);}
+    30%,50%,70%{transform:translate3d(-7px,3px,0);}
+    40%,60%{transform:translate3d(7px,-3px,0);}
+  }
+  @media (prefers-reduced-motion: reduce){
+    .cb-rays,.cb-face,.celebrate-shake{animation:none;}
+  }
+
+  .owner-tool{width:auto;background:transparent;border:1px solid rgba(244,235,217,0.3);color:var(--parchment-2);
+    padding:8px 14px;font-size:0.8rem;margin:4px;}
+  .owner-tool-row{display:flex;justify-content:center;flex-wrap:wrap;}
 </style>
 </head>
 <body>
 
 <div id="authGate" style="display:none;">
+
   <div class="gate-card">
     <h2>The Family Shelf</h2>
     <p>Sign in with a Google account to view and update the family's reading progress.</p>
@@ -457,12 +536,25 @@
   </section>
 
   <section>
+    <div class="section-title">🕐 Activity Log <span class="hint">every update, newest first</span></div>
+    <div id="activityLog"></div>
+  </section>
+
+  <section>
     <div class="section-title">🛠️ Manage entries <span class="hint">fix a typo or remove a book</span></div>
     <div class="manage-list" id="manageList"></div>
     <button class="export-btn" id="exportBtn">⬇️ Export data as CSV</button>
   </section>
 
   <footer>
+    <div id="ownerTools" style="display:none;margin-bottom:16px;">
+      <button class="owner-tool" id="repairBtn" style="display:none;">🔧 Repair activity log (one-time)</button>
+      <div class="owner-tool-row">
+        <button class="owner-tool" id="previewBookBtn">🎆 Preview book celebration</button>
+        <button class="owner-tool" id="previewMilestoneBtn">🏆 Preview 1,000-page celebration</button>
+      </div>
+      <div class="msg" id="ownerMsg"></div>
+    </div>
     <button class="reset-link" id="resetBtn" style="display:none;">clear all data</button>
   </footer>
 </div>
@@ -505,15 +597,17 @@ let auth = null;
 const REQUIRE_AUTH = true;
 
 /* ======================================================
-   Only this email can see and use "Clear all data."
-   Replace with the Google account email you sign in with.
-   Note: this hides the button for everyone else and blocks
-   the action in the app's own code — it is not enforced by
+   Only this account can see and use the owner tools
+   ("Clear all data", the one-time log repair, previews).
+   It is identified by its Firebase account ID, not an email
+   address, so nothing personal is published with this page.
+   Note: this hides the tools for everyone else and blocks
+   the action in the app's own code - it is not enforced by
    Firebase's security rules, so it deters family members
    using the app normally, but isn't a hard security wall
    against someone deliberately editing the page's code.
    ====================================================== */
-const OWNER_EMAIL = "marcus.beard09@gmail.com";
+const OWNER_UID = "xOQtNGCptwWydqausifWdksAeKL2";
 
 const SPINE_COLORS = ['#A63D40','#D9A441','#7C9473','#4A6FA5','#8C5E9C','#C97B4A'];
 const MILESTONES = [
@@ -535,6 +629,25 @@ let stakesPeriod = 'week';
 let coverFetchAttempted = {};
 let editingId = null;
 
+// One-time cleanup of the activity log, worked out from a snapshot of the family's real data:
+//  - deleteKeys:    log entries left behind by duplicate / deleted books and one overshoot that was later corrected
+//  - setDelta:      one entry whose page count was corrected after it was logged
+//  - linkOverrides: a log entry from before a book was renamed, pointed at the renamed book
+// Everything else is linked to its book automatically by reader + title. Books and all-time totals are never touched.
+const REPAIR_PLAN = {
+  "deleteKeys": [
+    "-P2NToBXEQVxT2dvDy4n",
+    "-P2opCMSxsVdCsXsTXwe",
+    "-P32U3NOOIBvd2dQ1vQ1"
+  ],
+  "setDelta": {
+    "-P17tmLSz7w_gOo-162U": 211
+  },
+  "linkOverrides": {
+    "-P11p6HSUlrqUMGJd7ae": "1788901356603-mlox0yblgil"
+  }
+};
+
 function hashName(str){
   let h = 0;
   for(let i=0;i<str.length;i++){ h = str.charCodeAt(i) + ((h<<5)-h); }
@@ -551,6 +664,9 @@ function timeAgo(iso){
   const m = Math.floor(s/60); if(m < 60) return m+'m ago';
   const h = Math.floor(m/60); if(h < 24) return h+'h ago';
   return Math.floor(h/24)+'d ago';
+}
+function formatDateTime(iso){
+  return new Date(iso).toLocaleString(undefined, { month:'short', day:'numeric', hour:'numeric', minute:'2-digit' });
 }
 function avatarHtml(uid, fallbackName){
   const p = profiles[uid];
@@ -571,64 +687,360 @@ function byPerson(){
   return map;
 }
 
-function launchConfetti(){
-  const colors = ['#A63D40','#D9A441','#7C9473','#4A6FA5','#C97B4A','#ffffff'];
-  const waves = 3;
-  for(let w=0; w<waves; w++){
-    setTimeout(()=>{
-      for(let i=0;i<80;i++){
-        const piece = document.createElement('div');
-        piece.className = 'confetti-piece';
-        piece.style.left = Math.random()*100+'vw';
-        piece.style.background = colors[Math.floor(Math.random()*colors.length)];
-        piece.style.width = (6+Math.random()*6)+'px';
-        piece.style.height = (10+Math.random()*8)+'px';
-        piece.style.transform = `rotate(${Math.random()*360}deg)`;
-        piece.style.animation = `confettiFall ${2+Math.random()*1.5}s linear forwards`;
-        piece.style.animationDelay = (Math.random()*0.4)+'s';
-        document.body.appendChild(piece);
-        setTimeout(()=>piece.remove(), 4500);
-      }
-    }, w*400);
-  }
+/* ---------- Celebration show (canvas) ---------- */
+const celebrationQueue = [];
+let celebrating = false;
+
+function celebrate(opts){
+  celebrationQueue.push(opts || {});
+  if(!celebrating) runNextCelebration();
+}
+function runNextCelebration(){
+  const next = celebrationQueue.shift();
+  if(!next){ celebrating = false; return; }
+  celebrating = true;
+  playCelebration(next, runNextCelebration);
 }
 
-function launchFireworks(){
-  const colors = ['#A63D40','#D9A441','#7C9473','#4A6FA5','#8C5E9C','#C97B4A','#ffffff'];
-  const bursts = 5;
-  for(let b=0; b<bursts; b++){
-    setTimeout(()=>{
-      const cx = 15 + Math.random()*70;
-      const cy = 12 + Math.random()*45;
-      const particles = 32;
-      for(let i=0;i<particles;i++){
-        const angle = (Math.PI*2*i)/particles + Math.random()*0.3;
-        const dist = 70 + Math.random()*70;
-        const dx = Math.cos(angle)*dist;
-        const dy = Math.sin(angle)*dist;
-        const p = document.createElement('div');
-        p.className = 'firework-particle';
-        p.style.left = cx+'vw';
-        p.style.top = cy+'vh';
-        p.style.background = colors[Math.floor(Math.random()*colors.length)];
-        p.style.setProperty('--dx', dx+'px');
-        p.style.setProperty('--dy', dy+'px');
-        document.body.appendChild(p);
-        setTimeout(()=>p.remove(), 1100);
-      }
-    }, b*280);
+function celebrationPerson(uid, fallbackName){
+  const p = profiles[uid] || {};
+  const own = books.filter(b => b.uid === uid);
+  return {
+    name: resolveName(uid, fallbackName),
+    photo: p.photoURL || '',
+    booksFinished: own.filter(b => b.finished).length,
+    pagesRead: own.reduce((sum, b) => sum + b.pagesRead, 0)
+  };
+}
+function buildCelebration(finishedBook, milestone){
+  const fmt = n => n.toLocaleString();
+  if(milestone){
+    const person = celebrationPerson(milestone.uid, milestone.fallbackName);
+    return {
+      epic: true, person,
+      title: `${fmt(milestone.pages)} PAGES!`,
+      sub: finishedBook
+        ? `${person.name} finished \u201C${finishedBook.title}\u201D and passed ${fmt(milestone.pages)} pages read!`
+        : `${person.name} just passed ${fmt(milestone.pages)} pages read!`
+    };
   }
+  const person = celebrationPerson(finishedBook.uid, finishedBook.name);
+  return {
+    epic: false, person,
+    title: 'BOOK FINISHED!',
+    sub: `${person.name} finished \u201C${finishedBook.title}\u201D`
+  };
 }
 
-function celebrate(){
-  launchConfetti();
-  launchFireworks();
-}
-if(!document.getElementById('confettiKeyframes')){
-  const style = document.createElement('style');
-  style.id = 'confettiKeyframes';
-  style.textContent = `@keyframes confettiFall{to{transform:translateY(105vh) rotate(720deg);opacity:0.3;}}`;
-  document.head.appendChild(style);
+function playCelebration(opts, done){
+  const epic = !!opts.epic;
+  const reduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  const DURATION = reduce ? 6000 : (epic ? 15000 : 11000);   // ms
+
+  // Big banner (text is set with textContent, never innerHTML)
+  const banner = document.createElement('div');
+  banner.className = 'celebrate-banner';
+  banner.style.setProperty('--banner-ms', DURATION + 'ms');
+  const emoji = document.createElement('div');
+  emoji.className = 'cb-emoji';
+  emoji.textContent = epic ? '\uD83C\uDFC6\uD83C\uDF86\uD83C\uDFC6' : '\uD83C\uDF89\uD83D\uDCDA\uD83C\uDF89';
+  const title = document.createElement('div');
+  title.className = 'cb-title';
+  title.textContent = opts.title || 'BOOK FINISHED!';
+  if(opts.person){
+    // The reader's own medal: photo (or initials) ringed in gold, with light rays turning behind it
+    const medal = document.createElement('div');
+    medal.className = 'cb-medal';
+    const rays = document.createElement('div');
+    rays.className = 'cb-rays';
+    medal.appendChild(rays);
+    const face = document.createElement('div');
+    face.className = 'cb-face';
+    if(opts.person.photo){
+      const img = document.createElement('img');
+      img.alt = '';
+      img.src = opts.person.photo;
+      face.appendChild(img);
+    } else {
+      face.textContent = initials(opts.person.name);
+      face.style.background = colorFor(opts.person.name);
+    }
+    medal.appendChild(face);
+    banner.appendChild(medal);
+  }
+  banner.appendChild(emoji);
+  banner.appendChild(title);
+  if(opts.sub){
+    const sub = document.createElement('div');
+    sub.className = 'cb-sub';
+    sub.textContent = opts.sub;
+    banner.appendChild(sub);
+  }
+  if(opts.person){
+    const stats = document.createElement('div');
+    stats.className = 'cb-stats';
+    const n = opts.person.booksFinished;
+    stats.textContent = '\uD83D\uDCDA ' + n + (n === 1 ? ' book' : ' books') + '   \u2022   \uD83D\uDCC4 ' + opts.person.pagesRead.toLocaleString() + ' pages';
+    banner.appendChild(stats);
+  }
+  document.body.appendChild(banner);
+
+  if(reduce){
+    setTimeout(()=>{ banner.remove(); done(); }, DURATION);
+    return;
+  }
+
+  const flash = document.createElement('div');
+  flash.className = 'celebrate-flash';
+  document.body.appendChild(flash);
+
+  const canvas = document.createElement('canvas');
+  canvas.style.cssText = 'position:fixed;left:0;top:0;width:100%;height:100%;pointer-events:none;z-index:10000;';
+  document.body.appendChild(canvas);
+  const ctx = canvas.getContext('2d');
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  let W = 0, H = 0;
+  function resize(){
+    W = window.innerWidth; H = window.innerHeight;
+    canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  const palette = epic
+    ? ['#FFD45C','#FFC107','#FFF1A8','#ffffff','#D9A441','#FF8A3D','#A63D40']
+    : ['#A63D40','#D9A441','#7C9473','#4A6FA5','#8C5E9C','#C97B4A','#ffffff','#FFD45C'];
+  const rnd = (a, b) => a + Math.random() * (b - a);
+  const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+
+  const GOLD = ['#FFD45C','#FFC107','#FFF1A8','#D9A441','#ffffff'];
+  const confetti = [], sparks = [], rockets = [], delayed = [];
+  const MAX_CONFETTI = epic ? 1500 : 1200;
+  const MAX_SPARKS = 2200;
+  let curT = 0, avgDt = 0.016, quality = 1, lastShake = -1e9;   // quality drops on slow phones so the show never stutters
+
+  function shake(){            // rumble the app (not the overlays) on the big booms
+    if(curT - lastShake < 700) return;
+    lastShake = curT;
+    const el = document.getElementById('appMain');
+    if(!el) return;
+    el.classList.remove('celebrate-shake'); void el.offsetWidth; el.classList.add('celebrate-shake');
+    setTimeout(() => el.classList.remove('celebrate-shake'), 650);
+  }
+  function flashNow(){
+    const f = document.createElement('div');
+    f.className = 'celebrate-flash';
+    document.body.appendChild(f);
+    setTimeout(() => f.remove(), 1200);
+  }
+
+  function addConfetti(x, y, vx, vy, g, drag, color){
+    if(confetti.length >= MAX_CONFETTI) return;
+    if(quality < 1 && Math.random() > quality) return;
+    confetti.push({
+      x, y, vx, vy, g: g || 520, drag: drag || 1.1,
+      w: rnd(6, 12), h: rnd(10, 18),
+      rot: rnd(0, Math.PI * 2), vr: rnd(-9, 9),
+      tilt: rnd(0, Math.PI * 2), tiltV: rnd(6, 14),
+      color: color || pick(palette), round: Math.random() < 0.22
+    });
+  }
+  function cannon(side, count){
+    const x = side === 'left' ? 0 : W;
+    const scale = Math.max(0.75, Math.min(1.4, H / 800));
+    for(let i = 0; i < count; i++){
+      const a = side === 'left' ? -Math.PI / 2 + rnd(0.15, 0.95) : -Math.PI / 2 - rnd(0.15, 0.95);
+      const sp = rnd(700, 1500) * scale;
+      addConfetti(x + rnd(-8, 8), H + rnd(-8, 8), Math.cos(a) * sp, Math.sin(a) * sp);
+    }
+  }
+  function rain(){
+    addConfetti(rnd(0, W), rnd(-40, -5), rnd(-60, 60), rnd(40, 160), 260, 1.6);
+  }
+
+  function addSpark(x, y, vx, vy, color, willow){
+    if(sparks.length >= MAX_SPARKS) return;
+    if(quality < 1 && Math.random() > quality) return;
+    sparks.push({
+      x, y, vx, vy, color, life: 1,
+      decay: rnd(0.55, 1.0) * (willow ? 0.55 : 1),
+      size: rnd(2.0, 4.0), g: willow ? 240 : 300, drag: 1.9
+    });
+  }
+  function burst(x, y, color, kind){
+    const big = kind === 'big', mini = kind === 'mini';
+    const count = big ? 170 : (kind === 'ring' ? 80 : (mini ? 46 : 110));
+    const power = big ? rnd(460, 620) : (mini ? rnd(200, 320) : rnd(300, 470));
+    const second = Math.random() < 0.4 ? pick(palette) : null;
+    for(let i = 0; i < count; i++){
+      let a, sp;
+      if(kind === 'ring'){ a = (i / count) * Math.PI * 2; sp = power; }
+      else { a = rnd(0, Math.PI * 2); sp = power * Math.sqrt(Math.random()); }
+      addSpark(x, y, Math.cos(a) * sp, Math.sin(a) * sp, (second && i % 2) ? second : color, kind === 'willow');
+    }
+    sparks.push({ core: true, x, y, vx: 0, vy: 0, life: 1, decay: 3.2, size: mini ? rnd(14, 24) : rnd(30, 52), color: '#ffffff', g: 0, drag: 0 });
+    if(big) shake();
+    if(kind === 'split'){   // the shell cracks open into a ring of smaller bursts
+      for(let k = 0; k < 6; k++){
+        const a = (k / 6) * Math.PI * 2 + rnd(0, 0.5), d = rnd(70, 140);
+        delayed.push({ at: curT + 420 + rnd(0, 140), fn: () => burst(x + Math.cos(a) * d, y + Math.sin(a) * d, pick(palette), 'mini') });
+      }
+    }
+  }
+  function launchRocket(x, targetY, color, kind){
+    const g = 500;
+    rockets.push({
+      x, y: H + 8, vx: rnd(-25, 25),
+      vy: -Math.sqrt(2 * g * Math.max(140, H - targetY)),
+      g, color, kind: kind || 'normal'
+    });
+  }
+
+  // Timed events
+  const events = [];
+  const volleys = [0, 0.5, 1.2, 2.6, 4.2, 5.8].concat(epic ? [7.4, 9.0] : []);
+  volleys.forEach((t, i) => events.push({ t: t * 1000, fn: () => { const n = i === 0 ? 170 : 100; cannon('left', n); cannon('right', n); if(i === 0) shake(); } }));
+  const finaleAt = DURATION * 0.6;
+  const finaleCount = epic ? 24 : 16;
+  events.push({ t: finaleAt - 200, fn: () => { shake(); flashNow(); } });
+  for(let i = 0; i < finaleCount; i++){
+    events.push({ t: finaleAt + i * 140, fn: () => launchRocket(rnd(W * 0.1, W * 0.9), rnd(H * 0.1, H * 0.5), pick(palette), i % 3 === 0 ? 'split' : 'big') });
+  }
+  events.push({ t: finaleAt + finaleCount * 140 + 350, fn: () => {
+    burst(W / 2, H * 0.30, '#FFD45C', 'big');
+    burst(W / 2, H * 0.18, '#ffffff', 'split');
+    burst(W * 0.25, H * 0.27, '#ffffff', 'ring');
+    burst(W * 0.75, H * 0.27, '#FF8A3D', 'ring');
+    cannon('left', 180); cannon('right', 180);
+    shake(); flashNow();
+  } });
+  events.sort((a, b) => a.t - b.t);
+
+  let ei = 0, rainAcc = 0, goldAcc = 0, nextRocket = 400, ended = false;
+  let last = performance.now();
+  const start = last;
+
+  function cleanup(){
+    if(ended) return;
+    ended = true;
+    window.removeEventListener('resize', resize);
+    canvas.remove(); flash.remove(); banner.remove();
+    const am = document.getElementById('appMain');
+    if(am) am.classList.remove('celebrate-shake');
+    done();
+  }
+
+  function frame(now){
+    if(ended) return;
+    try{
+      const rawDt = (now - last) / 1000;
+      avgDt = avgDt * 0.9 + Math.min(rawDt, 0.1) * 0.1;
+      quality = avgDt > 0.034 ? 0.55 : (avgDt > 0.026 ? 0.8 : 1);
+      const dt = Math.min(0.05, rawDt);
+      last = now;
+      const t = now - start;
+      curT = t;
+
+      while(ei < events.length && events[ei].t <= t){ events[ei].fn(); ei++; }
+      for(let i = delayed.length - 1; i >= 0; i--){
+        if(delayed[i].at <= t){ const f = delayed[i].fn; delayed.splice(i, 1); f(); }
+      }
+      if(t > 700 && t < DURATION - 2500){
+        rainAcc += (epic ? 260 : 170) * dt * quality;
+        while(rainAcc >= 1){ rain(); rainAcc -= 1; }
+      }
+      if(t >= finaleAt && t < finaleAt + (epic ? 4200 : 3200)){   // golden shower during the finale
+        goldAcc += (epic ? 380 : 300) * dt * quality;
+        while(goldAcc >= 1){ addConfetti(rnd(0, W), rnd(-40, -5), rnd(-80, 80), rnd(60, 200), 300, 1.5, pick(GOLD)); goldAcc -= 1; }
+      }
+      if(t >= nextRocket && t < finaleAt){
+        const rk = Math.random();
+        launchRocket(rnd(W * 0.12, W * 0.88), rnd(H * 0.12, H * 0.55), pick(palette), rk < 0.2 ? 'willow' : (rk < 0.45 ? 'split' : 'normal'));
+        if(Math.random() < 0.45) launchRocket(rnd(W * 0.12, W * 0.88), rnd(H * 0.12, H * 0.55), pick(palette), 'normal');
+        nextRocket = t + rnd(220, 480);
+      }
+
+      ctx.clearRect(0, 0, W, H);
+
+      // confetti
+      for(let i = confetti.length - 1; i >= 0; i--){
+        const p = confetti[i];
+        p.vy += p.g * dt;
+        p.vx -= p.vx * p.drag * dt;
+        p.vy -= p.vy * p.drag * dt * 0.8;
+        p.x += p.vx * dt; p.y += p.vy * dt;
+        p.rot += p.vr * dt; p.tilt += p.tiltV * dt;
+        if(p.y > H + 40 || p.x < -80 || p.x > W + 80){ confetti.splice(i, 1); continue; }
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.rot);
+        ctx.scale(1, Math.cos(p.tilt));
+        ctx.fillStyle = p.color;
+        if(p.round){ ctx.beginPath(); ctx.arc(0, 0, p.w / 2, 0, Math.PI * 2); ctx.fill(); }
+        else ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+        ctx.restore();
+      }
+
+      // rockets
+      ctx.globalCompositeOperation = 'lighter';
+      ctx.lineCap = 'round';
+      for(let i = rockets.length - 1; i >= 0; i--){
+        const r = rockets[i];
+        r.vy += r.g * dt;
+        r.x += r.vx * dt; r.y += r.vy * dt;
+        addSpark(r.x, r.y, rnd(-25, 25), rnd(20, 70), '#FFE9A8', false);
+        ctx.globalAlpha = 1;
+        ctx.strokeStyle = '#FFF4CC';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(r.x - r.vx * 0.05, r.y - r.vy * 0.05);
+        ctx.lineTo(r.x, r.y);
+        ctx.stroke();
+        if(r.vy >= -30){
+          burst(r.x, r.y, r.color, r.kind);
+          rockets.splice(i, 1);
+        }
+      }
+
+      // sparks and burst cores
+      for(let i = sparks.length - 1; i >= 0; i--){
+        const s = sparks[i];
+        s.life -= s.decay * dt;
+        if(s.life <= 0){ sparks.splice(i, 1); continue; }
+        if(s.core){
+          const rad = s.size * (1.6 - s.life * 0.6);
+          const grad = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, rad);
+          grad.addColorStop(0, 'rgba(255,255,255,' + Math.min(1, s.life) + ')');
+          grad.addColorStop(1, 'rgba(255,220,120,0)');
+          ctx.globalAlpha = 1;
+          ctx.fillStyle = grad;
+          ctx.beginPath(); ctx.arc(s.x, s.y, rad, 0, Math.PI * 2); ctx.fill();
+          continue;
+        }
+        s.vy += s.g * dt;
+        s.vx -= s.vx * s.drag * dt;
+        s.vy -= s.vy * s.drag * dt;
+        s.x += s.vx * dt; s.y += s.vy * dt;
+        ctx.globalAlpha = Math.max(0, Math.min(1, s.life * 1.3));
+        ctx.strokeStyle = s.color;
+        ctx.lineWidth = s.size;
+        ctx.beginPath();
+        ctx.moveTo(s.x - s.vx * 0.04, s.y - s.vy * 0.04);
+        ctx.lineTo(s.x, s.y);
+        ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
+      ctx.globalCompositeOperation = 'source-over';
+
+      const allDone = !confetti.length && !sparks.length && !rockets.length && !delayed.length && ei >= events.length;
+      if((t > DURATION && allDone) || t > DURATION + 4500){ cleanup(); return; }
+      requestAnimationFrame(frame);
+    }catch(e){
+      cleanup();
+    }
+  }
+  requestAnimationFrame(frame);
 }
 
 async function fetchCoverForTitle(title){
@@ -665,28 +1077,74 @@ function updateStreak(nameKey){
   s.lastDate = today;
 }
 
+/* ---------- Reading-log helpers ---------- */
+// Month and week windows follow the viewer's own clock (not UTC), so an
+// entry logged at 8 PM on the last day of the month counts for that month.
+function ymKey(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'); }
+function currentMonthKey(){ return ymKey(new Date()); }
+function startOfWeekLocal(){
+  const n = new Date();
+  return new Date(n.getFullYear(), n.getMonth(), n.getDate() - n.getDay()).getTime(); // Sunday 00:00, local
+}
+function normTitle(t){ return String(t||'').trim().toLowerCase(); }
+
+// A log entry counts unless it points at a book that has since been deleted.
+// (Older entries have no bookId; those always count.)
+function entryCounts(h){
+  return !h.bookId || books.some(b => b.id === h.bookId);
+}
+
 function monthlyPagesByPerson(){
-  const ym = new Date().toISOString().slice(0,7); // UTC year-month, matches history's UTC timestamps
+  const ym = currentMonthKey();
   const map = {};
   for(const h of history){
-    if(!h.timestamp || !h.timestamp.startsWith(ym)) continue;
+    if(!h.timestamp || !entryCounts(h)) continue;
+    if(ymKey(new Date(h.timestamp)) !== ym) continue;
     map[h.uid] = (map[h.uid]||0) + h.delta;
   }
+  for(const k in map) map[k] = Math.max(0, map[k]); // a correction can never push a window below zero
   return map;
 }
 
-function startOfWeekUTC(){
-  const now = new Date();
-  const day = now.getUTCDay(); // 0 = Sunday
-  return Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - day);
-}
 function weeklyPagesByPerson(){
-  const start = startOfWeekUTC();
+  const start = startOfWeekLocal();
   const map = {};
   for(const h of history){
-    if(!h.timestamp) continue;
+    if(!h.timestamp || !entryCounts(h)) continue;
     if(new Date(h.timestamp).getTime() < start) continue;
     map[h.uid] = (map[h.uid]||0) + h.delta;
+  }
+  for(const k in map) map[k] = Math.max(0, map[k]);
+  return map;
+}
+
+// When was each finished book finished? Prefer the recorded finishedAt; for
+// books finished before that was tracked, use the last time pages were logged.
+function lastLogTimeByBook(){
+  const idByKey = {};
+  books.forEach(b => { idByKey[b.uid+'|'+normTitle(b.title)] = b.id; });
+  const out = {};
+  for(const h of history){
+    if(!h.timestamp || !(h.delta > 0)) continue;
+    const id = h.bookId || idByKey[h.uid+'|'+normTitle(h.title)];
+    if(!id) continue;
+    if(!out[id] || h.timestamp > out[id]) out[id] = h.timestamp;
+  }
+  return out;
+}
+function effectiveFinishedAt(b, lastLog){
+  return b.finishedAt || lastLog[b.id] || b.updatedAt || null;
+}
+
+function monthFinishedByPerson(){
+  const ym = currentMonthKey();
+  const lastLog = lastLogTimeByBook();
+  const map = {};
+  for(const b of books){
+    if(!b.finished) continue;
+    const when = effectiveFinishedAt(b, lastLog);
+    if(!when || ymKey(new Date(when)) !== ym) continue;
+    map[b.uid] = (map[b.uid]||0) + 1;
   }
   return map;
 }
@@ -705,13 +1163,14 @@ function render(prevIds){
 
   const monthly = monthlyPagesByPerson();
   const weekly = weeklyPagesByPerson();
+  const monthFin = monthFinishedByPerson();
   const stats = uids.map(uid=>{
     const list = grouped[uid];
     const name = resolveName(uid, list[0] && list[0].name);
     const pages = list.reduce((s,b)=>s+b.pagesRead,0);
     const finished = list.filter(b=>b.finished).length;
     const streak = streaks[uid];
-    return {uid, name, pages, finished, monthPages: monthly[uid] || 0, weekPages: weekly[uid] || 0, streakCount: streak ? streak.count : 0};
+    return {uid, name, pages, finished, monthPages: monthly[uid] || 0, weekPages: weekly[uid] || 0, monthFinished: monthFin[uid] || 0, streakCount: streak ? streak.count : 0};
   }).sort((a,b)=>b.pages - a.pages);
 
   const podiumEl = document.getElementById('podium');
@@ -743,12 +1202,14 @@ function render(prevIds){
     board.innerHTML = `<div class="card" style="text-align:center;color:var(--parchment-2);opacity:0.6;">No progress logged yet — be the first!</div>`;
   } else {
     const valueFor = (s)=>{
-      if(leaderboardMetric === 'books') return s.finished;
+      if(leaderboardMetric === 'books') return leaderboardPeriod === 'month' ? s.monthFinished : s.finished;
       return leaderboardPeriod === 'month' ? s.monthPages : s.pages;
     };
     const metricStats = [...stats].sort((a,b)=> valueFor(b) - valueFor(a));
     const maxVal = Math.max(1, valueFor(metricStats[0]));
-    const unitLabel = leaderboardMetric === 'books' ? 'books' : (leaderboardPeriod==='month' ? 'pages this month' : 'pages');
+    const unitLabel = leaderboardMetric === 'books'
+      ? (leaderboardPeriod === 'month' ? 'books this month' : 'books')
+      : (leaderboardPeriod==='month' ? 'pages this month' : 'pages');
     board.innerHTML = metricStats.map((s,i)=>{
       const badge = badgeFor(s.pages);
       const val = valueFor(s);
@@ -859,6 +1320,29 @@ function render(prevIds){
     [...new Set(books.map(b=>b.title))].forEach(t => fetchCoverForTitle(t));
   }
 
+  // Activity Log — every logged update, newest first, pulled from history
+  const activityEl = document.getElementById('activityLog');
+  const visibleHistory = history.filter(entryCounts);
+  if(visibleHistory.length === 0){
+    activityEl.innerHTML = `<div class="empty-note">No activity logged yet.</div>`;
+  } else {
+    const sortedHistory = [...visibleHistory].sort((a,b)=> new Date(b.timestamp) - new Date(a.timestamp)).slice(0, 30);
+    activityEl.innerHTML = `<div class="activity-list">` + sortedHistory.map(h=>{
+      const bk = h.bookId ? books.find(b => b.id === h.bookId) : null;
+      const title = bk ? bk.title : h.title;
+      const what = h.delta < 0
+        ? `adjusted <span class="activity-delta neg">${h.delta}</span> pages in`
+        : `read <span class="activity-delta">+${h.delta}</span> pages in`;
+      return `
+      <div class="activity-row">
+        <div class="activity-info">
+          <b>${escapeHtml(resolveName(h.uid, h.name))}</b> ${what} ${escapeHtml(title)}
+        </div>
+        <div class="activity-time">${formatDateTime(h.timestamp)}</div>
+      </div>`;
+    }).join('') + `</div>`;
+  }
+
   // Manage entries — edit prefills the update form, delete removes it
   const manageEl = document.getElementById('manageList');
   if(books.length === 0){
@@ -869,7 +1353,7 @@ function render(prevIds){
       <div class="manage-row">
         <div class="manage-info">
           <b>${escapeHtml(resolveName(b.uid, b.name))}</b> — ${escapeHtml(b.title)}
-          <span>page ${b.pagesRead}${b.totalPages?'/'+b.totalPages:''} · ${b.finished?'finished':'reading'}</span>
+          <span>page ${b.pagesRead}${b.totalPages?'/'+b.totalPages:''} · ${b.finished?'finished':'reading'} · updated ${formatDateTime(b.updatedAt)}</span>
         </div>
         <div class="manage-actions">
           ${b.uid === (currentUser && currentUser.uid) ? `<button class="btn-edit" data-id="${b.id}">Edit</button>` : ''}
@@ -899,11 +1383,24 @@ function render(prevIds){
         if(!allowed) return;
         if(!confirm('Delete this entry? This cannot be undone.')) return;
         if(editingId === btn.dataset.id){ editingId = null; setEditingBanner(); }
-        books = books.filter(x=>x.id !== btn.dataset.id);
+        // Log entries that belong to this book go with it, so weekly/monthly totals stay honest
+        const remaining = books.filter(x => x.id !== target.id);
+        const titleStillUsed = remaining.some(x => x.uid === target.uid && normTitle(x.title) === normTitle(target.title));
+        const doomed = history.filter(h => h._key && (h.bookId
+          ? h.bookId === target.id
+          : (!titleStillUsed && h.uid === target.uid && normTitle(h.title) === normTitle(target.title))));
+        books = remaining;
         await db.ref('books').set(JSON.stringify(books));
+        if(doomed.length){
+          const upd = {};
+          doomed.forEach(h => { upd[h._key] = null; });
+          await db.ref('history').update(upd);
+        }
       });
     });
   }
+
+  updateOwnerControls();
 }
 
 function setEditingBanner(){
@@ -911,10 +1408,40 @@ function setEditingBanner(){
 }
 
 function isOwner(){
-  return !!(currentUser && currentUser.email && OWNER_EMAIL && !OWNER_EMAIL.startsWith('YOUR_') && currentUser.email.toLowerCase() === OWNER_EMAIL.toLowerCase());
+  return !!(currentUser && OWNER_UID && currentUser.uid === OWNER_UID);
+}
+function linkTargetFor(h){ // which book should this older (unlinked) log entry belong to?
+  const forced = REPAIR_PLAN.linkOverrides[h._key];
+  if(forced) return books.some(b => b.id === forced) ? forced : null;
+  const matches = books.filter(b => b.uid === h.uid && normTitle(b.title) === normTitle(h.title));
+  return matches.length === 1 ? matches[0].id : null;
+}
+function repairNeeded(){ // stays true until every planned change has been applied
+  const byKey = {};
+  history.forEach(h => { if(h._key) byKey[h._key] = h; });
+  if(REPAIR_PLAN.deleteKeys.some(k => byKey[k])) return true;
+  if(Object.entries(REPAIR_PLAN.setDelta).some(([k, d]) => byKey[k] && byKey[k].delta !== d)) return true;
+  return history.some(h => h._key && !h.bookId && linkTargetFor(h));
+}
+async function runRepair(){
+  const upd = {};
+  REPAIR_PLAN.deleteKeys.forEach(k => { if(history.some(h => h._key === k)) upd[k] = null; });
+  Object.entries(REPAIR_PLAN.setDelta).forEach(([k, d]) => {
+    const h = history.find(x => x._key === k);
+    if(h && h.delta !== d) upd[k + '/delta'] = d;
+  });
+  history.forEach(h => {
+    if(!h._key || h.bookId || upd[h._key] === null) return;
+    const id = linkTargetFor(h);
+    if(id) upd[h._key + '/bookId'] = id;
+  });
+  if(Object.keys(upd).length) await db.ref('history').update(upd);
 }
 function updateOwnerControls(){
-  document.getElementById('resetBtn').style.display = isOwner() ? 'inline-block' : 'none';
+  const owner = isOwner();
+  document.getElementById('resetBtn').style.display = owner ? 'inline-block' : 'none';
+  document.getElementById('ownerTools').style.display = owner ? 'block' : 'none';
+  document.getElementById('repairBtn').style.display = (owner && repairNeeded()) ? 'inline-block' : 'none';
 }
 
 function resizeImageFile(file){
@@ -1057,7 +1584,8 @@ document.getElementById('addBtn').addEventListener('click', async ()=>{
   }
 
   const prevPages = target ? target.pagesRead : 0;
-  const delta = Math.max(0, current - prevPages);
+  const delta = current - prevPages; // negative = the page number was corrected downward
+  const wasFinishedBefore = target ? target.finished : false;
 
   if(target){
     target.title = title;
@@ -1065,11 +1593,14 @@ document.getElementById('addBtn').addEventListener('click', async ()=>{
     if(total) target.totalPages = total;
     target.updatedAt = now;
     target.finished = target.totalPages ? current >= target.totalPages : false;
+    if(target.finished && !wasFinishedBefore) target.finishedAt = now;
   } else {
+    const isFinished = total ? current >= total : false;
     target = {
       id: Date.now()+'-'+Math.random().toString(36).slice(2),
       uid, name, title, pagesRead: current, totalPages: total,
-      finished: total ? current >= total : false,
+      finished: isFinished,
+      finishedAt: isFinished ? now : null,
       createdAt: now, updatedAt: now
     };
     updatedBooks.push(target);
@@ -1079,8 +1610,12 @@ document.getElementById('addBtn').addEventListener('click', async ()=>{
 
   try{
     await db.ref('books').set(JSON.stringify(updatedBooks));
+    if(delta !== 0){
+      const entry = { uid, name, title, bookId: target.id, delta, timestamp: now };
+      if(delta < 0) entry.kind = 'correction';
+      await db.ref('history').push(entry);
+    }
     if(delta > 0){
-      await db.ref('history').push({ uid, name, title, delta, timestamp: now });
       await db.ref('streaks').set(JSON.stringify(streaks));
     }
     msg.style.color = 'var(--sage)';
@@ -1175,6 +1710,34 @@ window.addEventListener('online', ()=> document.getElementById('offlineBanner').
 window.addEventListener('offline', ()=> document.getElementById('offlineBanner').classList.add('show'));
 if(!navigator.onLine) document.getElementById('offlineBanner').classList.add('show');
 
+document.getElementById('repairBtn').addEventListener('click', async ()=>{
+  if(!isOwner() || !db) return;
+  if(!confirm('Tidy the activity log?\n\n- removes 3 duplicate log entries\n- fixes 2 page counts that were corrected after logging\n- links every entry to its book\n\nYour books and all-time totals are not touched.')) return;
+  const msg = document.getElementById('ownerMsg');
+  msg.style.color = 'var(--sage)'; msg.textContent = 'Repairing...';
+  try{
+    await runRepair();
+    msg.textContent = 'Activity log repaired.';
+  }catch(e){
+    msg.style.color = 'var(--brick)';
+    msg.textContent = "Couldn't repair - check your connection and try again.";
+  }
+});
+
+document.getElementById('previewBookBtn').addEventListener('click', ()=>{
+  if(!isOwner()) return;
+  const mine = books.filter(b => b.uid === currentUser.uid && b.finished)
+    .sort((a,b) => new Date(b.updatedAt) - new Date(a.updatedAt))[0]
+    || books.find(b => b.finished)
+    || { uid: currentUser.uid, name: 'You', title: 'Your Next Great Book' };
+  celebrate(buildCelebration(mine, null));
+});
+document.getElementById('previewMilestoneBtn').addEventListener('click', ()=>{
+  if(!isOwner()) return;
+  const total = books.filter(b => b.uid === currentUser.uid).reduce((sum, b) => sum + b.pagesRead, 0);
+  celebrate(buildCelebration(null, { uid: currentUser.uid, pages: Math.max(1000, Math.floor(total / 1000) * 1000), fallbackName: currentUser.displayName }));
+});
+
 document.getElementById('resetBtn').addEventListener('click', async ()=>{
   if(!isConfigured) return;
   if(!isOwner()) return;
@@ -1207,17 +1770,24 @@ function attachDataListeners(){
 
     books = raw ? JSON.parse(raw) : [];
 
-    const newlyFinished = books.some(b => b.finished && !prevFinishedIds.has(b.id));
+    const newlyFinishedBooks = books.filter(b => b.finished && !prevFinishedIds.has(b.id));
 
     const newTotals = {};
     for(const b of books){ newTotals[b.uid] = (newTotals[b.uid]||0) + b.pagesRead; }
-    let milestoneHit = false;
+    let milestone = null;
     for(const uid in newTotals){
       const prev = prevTotals[uid] || 0;
-      if(Math.floor(newTotals[uid]/1000) > Math.floor(prev/1000)) milestoneHit = true;
+      const crossed = Math.floor(newTotals[uid]/1000);
+      if(crossed > Math.floor(prev/1000)){
+        const own = books.find(b => b.uid === uid);
+        milestone = { uid, pages: crossed * 1000, fallbackName: own && own.name };
+      }
     }
 
-    if(prevIds.size > 0 && (newlyFinished || milestoneHit)) celebrate();
+    // Only celebrate real changes after the first load (never on page open)
+    if(prevIds.size > 0 && (newlyFinishedBooks.length || milestone)){
+      celebrate(buildCelebration(newlyFinishedBooks[0] || null, milestone));
+    }
     render(prevIds.size ? prevIds : null);
   }, (err)=>{
     setConnBar('bad');
@@ -1250,7 +1820,7 @@ function attachDataListeners(){
 
   db.ref('history').on('value', (snap)=>{
     const raw = snap.val();
-    history = raw ? Object.values(raw) : [];
+    history = raw ? Object.entries(raw).map(([k, v]) => ({...v, _key: k})) : [];
     render(null);
   });
 }
