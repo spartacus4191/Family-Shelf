@@ -165,7 +165,8 @@
   label .opt{text-transform:none;opacity:0.6;letter-spacing:0;}
   input, select{
     width:100%;background:var(--ink);border:1px solid rgba(244,235,217,0.15);
-    border-radius:8px;padding:11px 12px;color:var(--parchment);font-family:'Inter',sans-serif;font-size:0.95rem;
+    border-radius:8px;padding:11px 12px;color:var(--parchment);font-family:'Inter',sans-serif;
+    font-size:16px; /* 16px or larger stops iPhones from zooming in when a box is tapped */
   }
   input:focus, select:focus{outline:2px solid var(--gold);outline-offset:1px;border-color:transparent;}
   input[type=file]{padding:8px;font-size:0.85rem;}
@@ -457,7 +458,7 @@
   </section>
 
   <section>
-    <div class="section-title">🏆 Leaderboard — by pages read</div>
+    <div class="section-title">🏆 Leaderboard <span class="hint">podium: top 3 by all-time pages</span></div>
     <div class="podium" id="podium"></div>
     <div class="metric-toggle" id="metricToggle">
       <button data-metric="books" id="metricBooksBtn">📖 Books</button>
@@ -523,11 +524,11 @@
       <div class="row2">
         <div class="field">
           <label for="current">I'm on page</label>
-          <input id="current" type="number" min="1" placeholder="128">
+          <input id="current" type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off" placeholder="128">
         </div>
         <div class="field">
           <label for="total">Total pages <span class="opt">(optional)</span></label>
-          <input id="total" type="number" min="1" placeholder="310">
+          <input id="total" type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off" placeholder="310">
         </div>
       </div>
       <button id="addBtn">Update my progress</button>
@@ -1047,21 +1048,69 @@ function playCelebration(opts, done){
   requestAnimationFrame(frame);
 }
 
-async function fetchCoverForTitle(title){
-  const key = title.trim().toLowerCase();
-  if(covers[key] !== undefined || coverFetchAttempted[key]) return;
-  coverFetchAttempted[key] = true;
+/* ---------- Book covers ---------- */
+// Each title is looked up on Open Library once and the answer is saved for the whole family.
+// Saved values: a cover web address; null = "looked it up, Open Library has no cover";
+// '' = an older blank that may have come from a failed lookup, so it is looked up again.
+// Nothing is looked up until the saved covers have loaded, lookups go one at a time,
+// and a lookup that fails (busy site, weak signal) is never saved as "no cover".
+let coversLoaded = false;
+const coverQueue = [];
+let coverWorkerBusy = false;
+function isCoverUrl(v){ return typeof v === 'string' && /^https:\/\//.test(v); }
+function parseCovers(raw){
+  try{ const v = raw ? JSON.parse(raw) : {}; return (v && typeof v === 'object' && !Array.isArray(v)) ? v : {}; }catch(e){ return {}; }
+}
+function needsCoverLookup(key){ const v = covers[key]; return v === undefined || v === ''; }
+function queueMissingCovers(){
+  if(!coversLoaded || !db) return;
+  for(const b of books){
+    const key = normTitle(b.title);
+    if(!key || coverFetchAttempted[key] || !needsCoverLookup(key)) continue;
+    coverFetchAttempted[key] = true;                 // at most one lookup per title each time the app is opened
+    const item = { key, title: String(b.title).trim() };
+    if(covers[key] === undefined) coverQueue.unshift(item);   // brand-new titles go first
+    else coverQueue.push(item);                               // older blanks wait their turn
+  }
+  runCoverQueue();
+}
+async function runCoverQueue(){
+  if(coverWorkerBusy) return;
+  coverWorkerBusy = true;
+  try{
+    while(coverQueue.length){
+      const item = coverQueue.shift();
+      if(!needsCoverLookup(item.key)) continue;     // another phone already found it
+      const found = await lookUpCover(item.title);  // a cover address, null (no cover exists) or undefined (lookup failed)
+      if(found !== undefined){ try{ await saveCover(item.key, found); }catch(e){} }
+      await new Promise(r => setTimeout(r, 300));   // go gently on Open Library
+    }
+  } finally {
+    coverWorkerBusy = false;
+  }
+}
+async function lookUpCover(title){
   try{
     const res = await fetch('https://openlibrary.org/search.json?title='+encodeURIComponent(title)+'&limit=1&fields=cover_i');
+    if(!res.ok) return undefined;
     const data = await res.json();
-    const coverId = data.docs && data.docs[0] && data.docs[0].cover_i;
-    const url = coverId ? `https://covers.openlibrary.org/b/id/${coverId}-M.jpg` : '';
-    covers[key] = url;
-    if(db) await db.ref('covers').set(JSON.stringify(covers));
-    render(null);
+    if(!data || !Array.isArray(data.docs)) return undefined;
+    const coverId = data.docs[0] && data.docs[0].cover_i;
+    return (Number.isInteger(coverId) && coverId > 0) ? `https://covers.openlibrary.org/b/id/${coverId}-M.jpg` : null;
   }catch(e){
-    covers[key] = '';
+    return undefined;
   }
+}
+function saveCover(key, value){
+  // Adds just this one title to the newest saved list. Never replaces a cover that is already saved.
+  return db.ref('covers').transaction(raw => {
+    const all = parseCovers(raw);
+    const cur = all[key];
+    if(isCoverUrl(cur)) return;                      // already has a cover: leave it alone
+    if(cur === null && value === null) return;       // already known to have none
+    all[key] = value;
+    return JSON.stringify(all);
+  });
 }
 
 function todayStr(){
@@ -1100,6 +1149,8 @@ function startOfWeekLocal(){
   return new Date(n.getFullYear(), n.getMonth(), n.getDate() - n.getDay()).getTime(); // Sunday 00:00, local
 }
 function normTitle(t){ return String(t||'').trim().toLowerCase(); }
+// "1,234" -> 1234, "250" -> 250, "" or "abc" -> NaN (page boxes are plain text so iPhones show the number pad)
+function wholeNumber(str){ const v = parseInt(String(str == null ? '' : str).replace(/[,\s]/g, ''), 10); return Number.isFinite(v) ? v : NaN; }
 
 // Shared lists are stored as one JSON text. These read them defensively, so a stray or edited
 // value can never break the page: numbers are forced to numbers, text to text.
@@ -1336,10 +1387,9 @@ function render(prevIds){
       const spines = list.map(b=>{
         const basis = b.totalPages || b.pagesRead;
         const h = Math.max(34, Math.min(72, 30 + basis/12));
-        const coverKey = b.title.trim().toLowerCase();
-        const coverUrl = covers[coverKey];
+        const coverUrl = covers[normTitle(b.title)];
         const label = `${escapeHtml(b.title)} — ${b.pagesRead}${b.totalPages?'/'+b.totalPages:''}pg${b.finished?' (finished)':' (reading)'}`;
-        if(coverUrl){
+        if(isCoverUrl(coverUrl)){
           return `<div class="spine cover-spine ${b.finished?'':'reading'}" style="height:${h}px;" title="${label}"><img src="${escapeHtml(coverUrl)}" alt="${escapeHtml(b.title)}"></div>`;
         }
         return `<div class="spine ${b.finished?'':'reading'}" style="height:${h}px;background:${colorFor(b.title)}" title="${label}">
@@ -1353,8 +1403,8 @@ function render(prevIds){
       </div>`;
     }).join('');
 
-    // fetch missing cover art in the background, one title at a time, non-blocking
-    [...new Set(books.map(b=>b.title))].forEach(t => fetchCoverForTitle(t));
+    // look up covers only for titles nobody has looked up yet (one at a time, after the saved covers have loaded)
+    queueMissingCovers();
   }
 
   // Activity Log — every logged update, newest first, pulled from history
@@ -1670,8 +1720,8 @@ document.getElementById('addBtn').addEventListener('click', async ()=>{
   const uid = currentUser.uid;
   const name = resolveName(uid, currentUser.displayName);
   const title = titleEl.value.trim();
-  const current = parseInt(currentEl.value, 10);
-  const total = totalEl.value ? parseInt(totalEl.value, 10) : null;
+  const current = wholeNumber(currentEl.value);
+  const total = wholeNumber(totalEl.value) || null;
 
   if(!title || !current || current <= 0){
     msg.style.color = 'var(--brick)'; msg.textContent = 'Fill in a book title and current page.'; return;
@@ -1860,6 +1910,7 @@ function listen(path, cb, errCb){
 function detachDataListeners(){ listenerRefs.forEach(r => r.off()); listenerRefs.length = 0; }
 function clearLocalData(){
   books = []; profiles = {}; stakes = []; covers = {}; streaks = {}; history = []; editingId = null;
+  coversLoaded = false; coverQueue.length = 0;
   setEditingBanner();
 }
 function isPermissionDenied(err){ return /permission[_ ]denied/i.test(String((err && (err.code || err.message)) || '')); }
@@ -1921,8 +1972,8 @@ function attachDataListeners(){
   });
 
   listen('covers', (snap)=>{
-    const raw = snap.val();
-    covers = raw ? JSON.parse(raw) : {};
+    covers = parseCovers(snap.val());
+    coversLoaded = true;
     render(null);
   });
 
