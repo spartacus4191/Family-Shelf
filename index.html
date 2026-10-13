@@ -437,6 +437,93 @@
   .picker-actions button{flex:1;background:transparent;border:1px solid rgba(244,235,217,0.3);color:var(--parchment-2);font-weight:600;padding:10px;font-size:0.85rem;}
   .picker-credit{margin-top:10px;font-size:0.68rem;color:var(--parchment-2);opacity:0.55;text-align:center;}
   .picker-credit a{color:inherit;}
+
+  /* Leaderboard switches, month heading, champions */
+  .board-controls{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;}
+  .board-controls .metric-toggle{margin-bottom:0;}
+  .board-controls .period-toggle{margin-left:0;}
+  .board-heading{font-size:0.8rem;color:var(--parchment-2);opacity:0.85;margin:4px 0 14px;font-weight:600;letter-spacing:0.02em;}
+  .podium-empty{text-align:center;color:var(--parchment-2);opacity:0.8;font-size:0.9rem;padding:14px 8px 20px;}
+  .champ{font-size:0.85rem;}
+  .champ-card{display:flex;align-items:center;gap:14px;margin-bottom:16px;padding:14px 16px;border-radius:14px;
+    background:linear-gradient(120deg, rgba(217,164,65,0.24), rgba(217,164,65,0.06) 70%);border:1px solid rgba(217,164,65,0.55);}
+  .champ-avatar{width:54px;height:54px;border-radius:50%;flex-shrink:0;overflow:hidden;border:3px solid var(--gold);
+    display:flex;align-items:center;justify-content:center;font-family:'Fraunces',serif;font-weight:700;color:#1a1a1a;}
+  .champ-avatar img{width:100%;height:100%;object-fit:cover;display:block;}
+  .champ-label{font-size:0.72rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--gold);font-weight:700;}
+  .champ-name{font-family:'Fraunces',serif;font-weight:700;font-size:1.15rem;}
+  .champ-stats{font-size:0.78rem;color:var(--parchment-2);opacity:0.8;}
+  .trophy-case{margin-top:14px;background:var(--ink-2);border:1px solid rgba(244,235,217,0.08);border-radius:10px;padding:10px 14px;}
+  .trophy-case summary{cursor:pointer;font-weight:600;font-size:0.9rem;}
+  .trophy-list{margin-top:6px;}
+  .trophy-row{display:flex;align-items:baseline;gap:10px;padding:8px 0;border-top:1px solid rgba(244,235,217,0.06);font-size:0.82rem;}
+  .trophy-row:first-child{border-top:none;}
+  .trophy-row .t-month{color:var(--parchment-2);opacity:0.75;white-space:nowrap;}
+  .trophy-row .t-who{flex:1;text-align:right;font-weight:600;}
+  .trophy-row .t-pages{color:var(--gold);font-family:'IBM Plex Mono',monospace;white-space:nowrap;}
+
+  /* One-tap progress */
+  .quick-row{display:flex;gap:6px;margin-top:10px;}
+  .quick-row button{width:auto;flex:1;padding:8px 4px;font-size:0.8rem;font-weight:600;background:transparent;
+    border:1px solid rgba(244,235,217,0.25);color:var(--parchment);border-radius:8px;}
+  .quick-row .q-finish{border-color:var(--gold);color:var(--gold);}
+  .quick-row button:disabled{opacity:0.45;}
+
+  /* Little pop-up messages */
+  .toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:9500;max-width:90vw;text-align:center;
+    background:var(--ink-2);border:1px solid rgba(244,235,217,0.22);color:var(--parchment);padding:10px 16px;border-radius:999px;
+    font-size:0.85rem;box-shadow:0 6px 20px rgba(0,0,0,0.35);opacity:0;transition:opacity .25s;pointer-events:none;}
+  .toast.show{opacity:1;}
+
+  /* Family goal */
+  .goal-card{margin:18px 0 4px;padding:14px 16px;border-radius:14px;background:var(--ink-2);border:1px solid rgba(124,148,115,0.45);}
+  .goal-card.reached{border-color:var(--gold);background:linear-gradient(120deg, rgba(217,164,65,0.2), var(--ink-2) 75%);}
+  .goal-top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;}
+  .goal-label{font-weight:700;font-size:0.9rem;}
+  .goal-pct{font-family:'IBM Plex Mono',monospace;font-weight:700;color:var(--gold);}
+  .goal-nums{font-size:0.82rem;color:var(--parchment-2);margin:4px 0 8px;}
+  .goal-nums b{color:var(--parchment);font-size:1.05rem;}
+  .goal-track{background:rgba(0,0,0,0.3);border-radius:8px;height:14px;overflow:hidden;}
+  .goal-fill{height:100%;border-radius:8px;background:linear-gradient(90deg, var(--sage), var(--gold));transition:width 0.8s ease;}
+  .goal-note{font-size:0.78rem;color:var(--parchment-2);opacity:0.85;margin-top:8px;}
+  .goal-empty{font-size:0.82rem;color:var(--parchment-2);border-style:dashed;}
+  .owner-goal{max-width:380px;margin:8px auto 4px;text-align:left;}
+  .owner-goal label{margin-bottom:4px;}
+  .owner-goal-row{display:flex;gap:8px;align-items:center;}
+  .owner-goal-row input{flex:1;min-width:0;}
+  .owner-goal-row .owner-tool{margin:0;white-space:nowrap;}
+
+  /* Cheers */
+  .activity-row{align-items:flex-start;}
+  .cheer-bar{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;align-items:center;}
+  .cheer{width:auto;background:transparent;border:1px solid rgba(244,235,217,0.18);color:var(--parchment);border-radius:999px;padding:3px 10px;font-size:0.8rem;font-weight:600;}
+  .cheer.on{background:rgba(217,164,65,0.22);border-color:var(--gold);}
+  .cheer-from{font-size:0.74rem;color:var(--parchment-2);opacity:0.9;}
+  .activity-done{color:var(--gold);font-weight:600;}
+
+  /* Badges */
+  .badge-board{display:flex;flex-direction:column;gap:8px;}
+  .badge-person{background:var(--ink-2);border:1px solid rgba(244,235,217,0.08);border-radius:10px;padding:10px 12px;}
+  .badge-head{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+  .badge-head .avatar{width:30px;height:30px;font-size:0.8rem;}
+  .badge-head b{flex:1;font-size:0.92rem;}
+  .badge-count{font-size:0.72rem;color:var(--parchment-2);opacity:0.75;font-family:'IBM Plex Mono',monospace;}
+  .badge-chips{display:flex;flex-wrap:wrap;gap:6px;}
+  .badge-chip{width:auto;background:rgba(244,235,217,0.06);border:1px solid rgba(244,235,217,0.14);border-radius:8px;padding:5px 8px;font-size:1.05rem;line-height:1;color:var(--parchment);}
+  .badge-none{font-size:0.78rem;color:var(--parchment-2);opacity:0.6;font-style:italic;}
+  .badge-help{margin-top:10px;background:var(--ink-2);border:1px solid rgba(244,235,217,0.08);border-radius:10px;padding:10px 14px;}
+  .badge-help summary{cursor:pointer;font-weight:600;font-size:0.88rem;}
+  .badge-rule{display:flex;gap:10px;align-items:baseline;padding:6px 0;font-size:0.82rem;border-top:1px solid rgba(244,235,217,0.06);}
+  .badge-rule:first-child{border-top:none;}
+  .badge-rule .br-icon{font-size:1.1rem;width:1.6em;text-align:center;flex-shrink:0;}
+  .badge-rule b{display:block;}
+  .badge-rule small{color:var(--parchment-2);opacity:0.8;}
+
+  /* Recap picture */
+  .recap-row{display:flex;gap:8px;margin-top:12px;}
+  .recap-row select{flex:1;min-width:0;}
+  .recap-row button{width:auto;padding:11px 14px;white-space:nowrap;background:transparent;border:1px solid var(--gold);color:var(--gold);}
+  .recap-img{width:100%;border-radius:10px;display:block;margin:4px 0 2px;}
 </style>
 </head>
 <body>
@@ -475,6 +562,8 @@
     <div class="stat"><div class="num" id="totReaders">0</div><div class="lbl">Readers</div></div>
   </div>
 
+  <div id="goalCard"></div>
+
   <section>
     <div class="section-title">🎉 The Stakes</div>
     <div class="metric-toggle" id="stakesPeriodToggle">
@@ -489,17 +578,35 @@
   </section>
 
   <section>
-    <div class="section-title">🏆 Leaderboard <span class="hint">podium: top 3 by all-time pages</span></div>
+    <div class="section-title">🏆 Leaderboard</div>
+    <div id="championCard"></div>
+    <div class="board-controls">
+      <div class="metric-toggle period-toggle" id="periodToggle">
+        <button data-period="month" id="periodMonthBtn" class="active">This Month</button>
+        <button data-period="all" id="periodAllBtn">All-Time</button>
+      </div>
+      <div class="metric-toggle" id="metricToggle">
+        <button data-metric="pages" id="metricPagesBtn" class="active">📄 Pages</button>
+        <button data-metric="books" id="metricBooksBtn">📖 Books</button>
+      </div>
+    </div>
+    <div class="board-heading" id="boardHeading"></div>
     <div class="podium" id="podium"></div>
-    <div class="metric-toggle" id="metricToggle">
-      <button data-metric="books" id="metricBooksBtn">📖 Books</button>
-      <button data-metric="pages" id="metricPagesBtn" class="active">📄 Pages</button>
-    </div>
-    <div class="metric-toggle period-toggle" id="periodToggle">
-      <button data-period="all" id="periodAllBtn" class="active">All-Time</button>
-      <button data-period="month" id="periodMonthBtn">This Month</button>
-    </div>
     <div class="board" id="board"></div>
+    <details class="trophy-case" id="trophyCase" style="display:none;">
+      <summary id="trophySummary">🏆 Past champions</summary>
+      <div class="trophy-list" id="trophyList"></div>
+    </details>
+    <div class="recap-row" id="recapRow" style="display:none;">
+      <select id="recapMonth" aria-label="Month for the recap picture"></select>
+      <button id="recapBtn">📸 Recap picture</button>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-title">🎖️ Badges <span class="hint">tap a badge to see what it's for</span></div>
+    <div class="badge-board" id="badgeBoard"></div>
+    <details class="badge-help"><summary>How to earn badges</summary><div id="badgeLegend"></div></details>
   </section>
 
   <section>
@@ -585,11 +692,39 @@
         <button class="owner-tool" id="previewBookBtn">🎆 Preview book celebration</button>
         <button class="owner-tool" id="previewMilestoneBtn">🏆 Preview 1,000-page celebration</button>
       </div>
+      <div class="owner-tool-row">
+        <button class="owner-tool" id="backupBtn">💾 Download a backup</button>
+      </div>
+      <div class="owner-goal">
+        <label for="goalInput">🎯 Family goal (pages each month)</label>
+        <div class="owner-goal-row">
+          <input id="goalInput" type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off" placeholder="e.g. 5,000 (blank = off)">
+          <button class="owner-tool" id="goalSaveBtn">Save goal</button>
+        </div>
+      </div>
       <div class="msg" id="ownerMsg"></div>
     </div>
     <button class="reset-link" id="resetBtn" style="display:none;">clear all data</button>
     <div class="covers-credit">Book covers from <a href="https://openlibrary.org" target="_blank" rel="noopener">Open Library</a></div>
   </footer>
+</div>
+
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+<!-- Monthly recap picture -->
+<div id="recapModal" class="picker-backdrop" style="display:none;">
+  <div class="picker-card" role="dialog" aria-modal="true" aria-labelledby="recapHeading">
+    <div class="picker-head">
+      <h3 id="recapHeading">Monthly recap</h3>
+      <button class="picker-x" id="recapClose" aria-label="Close">✕</button>
+    </div>
+    <div class="picker-for">Share it, or save it to your photos. On an iPhone you can also press and hold the picture to save it.</div>
+    <img id="recapImg" class="recap-img" alt="Monthly recap picture">
+    <div class="picker-actions">
+      <button id="recapShare">Share or save</button>
+      <button id="recapCancel">Close</button>
+    </div>
+  </div>
 </div>
 
 <!-- Pick-a-cover -->
@@ -666,7 +801,7 @@ const OWNER_UID = "xOQtNGCptwWydqausifWdksAeKL2";
 
 const SPINE_COLORS = ['#A63D40','#D9A441','#7C9473','#4A6FA5','#8C5E9C','#C97B4A'];
 const MILESTONES = [
-  {p:2000, badge:'👑'},
+  {p:2000, badge:'💎'},   // the crown is saved for whoever is in first place
   {p:1000, badge:'🥇'},
   {p:500, badge:'⭐'},
   {p:100, badge:'🔖'}
@@ -679,10 +814,19 @@ let covers = {};
 let streaks = {};
 let history = [];
 let leaderboardMetric = 'pages';
-let leaderboardPeriod = 'all';
+let leaderboardPeriod = 'month';   // the monthly race is the main event
 let stakesPeriod = 'week';
 let coverFetchAttempted = {};
 let editingId = null;
+const flashUntil = {};   // reading cards that just changed stay highlighted until this time, even if the screen redraws
+function fadeFlashes(){
+  const now = Date.now();
+  document.querySelectorAll('.reading-card.flash').forEach(el => { if((flashUntil[el.dataset.id] || 0) <= now) el.classList.remove('flash'); });
+}
+let booksLoaded = false, historyLoaded = false;   // both are needed before new badges are announced
+let familyGoal = null;                             // { pages } - the family's shared target, the same every month until changed
+let badgeBaseline = null;                          // the badges everyone had last time, so new ones can be announced
+const CHEERS = ['👏', '🔥', '🎉'];
 
 // One-time cleanup of the activity log, worked out from a snapshot of the family's real data:
 //  - deleteKeys:    log entries left behind by duplicate / deleted books and one overshoot that was later corrected
@@ -1323,8 +1467,10 @@ function parseStakes(raw){
 
 // A log entry counts unless it points at a book that has since been deleted.
 // (Older entries have no bookId; those always count.)
+let countedIdsFor = null, countedIds = new Set();
 function entryCounts(h){
-  return !h.bookId || books.some(b => b.id === h.bookId);
+  if(countedIdsFor !== books){ countedIds = new Set(books.map(b => b.id)); countedIdsFor = books; }
+  return !h.bookId || countedIds.has(h.bookId);
 }
 
 function monthlyPagesByPerson(){
@@ -1382,6 +1528,137 @@ function monthFinishedByPerson(){
   return map;
 }
 
+/* ---------- Monthly champions ---------- */
+// Worked out from the activity log, so every finished month can be looked back on.
+function prevMonthKey(){ const n = new Date(); return ymKey(new Date(n.getFullYear(), n.getMonth() - 1, 1)); }
+function monthName(ym, withYear){
+  const [y, m] = String(ym).split('-').map(Number);
+  return new Date(y, m - 1, 1).toLocaleString(undefined, withYear ? { month: 'long', year: 'numeric' } : { month: 'long' });
+}
+function daysLeftInMonth(){ const n = new Date(); return new Date(n.getFullYear(), n.getMonth() + 1, 0).getDate() - n.getDate(); }
+function monthlyChampions(){                 // finished months only, newest first; ties share the title
+  const cur = currentMonthKey();
+  const pages = {};
+  for(const h of history){
+    if(!h.timestamp || !entryCounts(h)) continue;
+    const d = new Date(h.timestamp);
+    if(isNaN(d.getTime())) continue;
+    const ym = ymKey(d);
+    if(ym >= cur) continue;
+    const m = pages[ym] || (pages[ym] = {});
+    m[h.uid] = (m[h.uid] || 0) + h.delta;
+  }
+  const lastLog = lastLogTimeByBook();
+  const fin = {};
+  for(const b of books){
+    if(!b.finished) continue;
+    const when = effectiveFinishedAt(b, lastLog);
+    if(!when) continue;
+    const ym = ymKey(new Date(when));
+    const m = fin[ym] || (fin[ym] = {});
+    m[b.uid] = (m[b.uid] || 0) + 1;
+  }
+  const out = [];
+  for(const ym of Object.keys(pages).sort().reverse()){
+    const per = pages[ym];
+    const best = Math.max(0, ...Object.values(per));
+    if(best <= 0) continue;
+    const winners = Object.keys(per).filter(u => per[u] === best);
+    out.push({ ym, winners, pages: best, books: winners.map(u => (fin[ym] && fin[ym][u]) || 0) });
+  }
+  return out;
+}
+
+function displayNameFor(uid){ const b = books.find(x => x.uid === uid); return resolveName(uid, b ? b.name : ''); }
+function firstNameFor(uid){ return String(displayNameFor(uid)).trim().split(/\s+/)[0] || 'Someone'; }
+function familyMonthTotal(){ return Object.values(monthlyPagesByPerson()).reduce((a, v) => a + v, 0); }
+function pagesInMonth(ym){                   // { uid: pages } for any month, from the activity log
+  const per = {};
+  for(const h of history){
+    if(!h.timestamp || !entryCounts(h)) continue;
+    const d = new Date(h.timestamp);
+    if(isNaN(d.getTime()) || ymKey(d) !== ym) continue;
+    per[h.uid] = (per[h.uid] || 0) + h.delta;
+  }
+  for(const u in per) per[u] = Math.max(0, per[u]);
+  return per;
+}
+function booksFinishedIn(ym){               // finished books whose finish date falls in that month
+  const lastLog = lastLogTimeByBook();
+  return books.filter(b => { if(!b.finished) return false; const w = effectiveFinishedAt(b, lastLog); return !!w && ymKey(new Date(w)) === ym; });
+}
+function parseGoal(v){
+  if(!v || typeof v !== 'object') return null;
+  const n = Number(v.pages);
+  return (Number.isFinite(n) && n >= 1 && n <= 10000000) ? { pages: Math.round(n), at: typeof v.at === 'string' ? v.at : '' } : null;
+}
+function cleanCheers(c){
+  const out = {};
+  if(c && typeof c === 'object') for(const u in c){ if(CHEERS.includes(c[u])) out[u] = c[u]; }
+  return out;
+}
+
+/* ---------- Badges ---------- */
+// Worked out from the books and the activity log, so nothing extra has to be saved.
+const BADGES = [
+  { id: 'first',      icon: '🌱', name: 'First Finish',   how: 'Finish your first book' },
+  { id: 'five',       icon: '📚', name: 'High Five',      how: 'Finish 5 books' },
+  { id: 'ten',        icon: '🏛️', name: 'Library Legend', how: 'Finish 10 books' },
+  { id: 'twentyfive', icon: '🦉', name: 'Wise Owl',       how: 'Finish 25 books' },
+  { id: 'big',        icon: '🧱', name: 'Big Book',       how: 'Finish a book with 400 or more pages' },
+  { id: 'roll',       icon: '🔥', name: 'On a Roll',      how: 'Read 3 days in a row' },
+  { id: 'week',       icon: '⚡', name: 'Week Warrior',   how: 'Read 7 days in a row' },
+  { id: 'sprint',     icon: '🏃', name: 'Page Sprinter',  how: 'Read 100 or more pages in one day' },
+  { id: 'marathon',   icon: '🚀', name: 'Month Marathon', how: 'Read 1,000 pages in one month' },
+  { id: 'early',      icon: '🌅', name: 'Early Bird',     how: 'Log reading before 7 a.m.' },
+  { id: 'owl',        icon: '🌙', name: 'Night Owl',      how: 'Log reading after 10 p.m.' },
+  { id: 'champ',      icon: '🏆', name: 'Champion',       how: 'Win a month (most pages)' }
+];
+function dayKey(d){ return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); }
+function longestRun(dayKeys){               // longest run of back-to-back days
+  const days = [...dayKeys].sort().map(k => { const [y, m, d] = k.split('-').map(Number); return Date.UTC(y, m - 1, d) / 86400000; });
+  let best = 0, run = 0, prev = null;
+  for(const n of days){ run = (prev !== null && n - prev === 1) ? run + 1 : 1; best = Math.max(best, run); prev = n; }
+  return best;
+}
+function badgesByPerson(champs){            // { uid: Set of badge ids }
+  const per = {};
+  const get = u => per[u] || (per[u] = { days: {}, months: {}, early: false, owl: false });
+  for(const h of history){
+    if(!h.timestamp || !h.uid || !entryCounts(h)) continue;
+    const d = new Date(h.timestamp);
+    if(isNaN(d.getTime())) continue;
+    const p = get(h.uid);
+    const dk = dayKey(d), mk = ymKey(d);
+    p.days[dk] = (p.days[dk] || 0) + h.delta;
+    p.months[mk] = (p.months[mk] || 0) + h.delta;
+    if(h.delta > 0){ const hr = d.getHours(); if(hr < 7) p.early = true; if(hr >= 22) p.owl = true; }
+  }
+  const out = {};
+  const uids = new Set([...books.map(b => b.uid), ...Object.keys(per)]);
+  for(const u of uids){
+    if(!u) continue;
+    const fin = books.filter(b => b.uid === u && b.finished);
+    const p = per[u] || { days: {}, months: {}, early: false, owl: false };
+    const streak = longestRun(Object.keys(p.days).filter(k => p.days[k] > 0));
+    const set = new Set();
+    if(fin.length >= 1) set.add('first');
+    if(fin.length >= 5) set.add('five');
+    if(fin.length >= 10) set.add('ten');
+    if(fin.length >= 25) set.add('twentyfive');
+    if(fin.some(b => (b.totalPages || 0) >= 400)) set.add('big');
+    if(streak >= 3) set.add('roll');
+    if(streak >= 7) set.add('week');
+    if(Object.values(p.days).some(v => v >= 100)) set.add('sprint');
+    if(Object.values(p.months).some(v => v >= 1000)) set.add('marathon');
+    if(p.early) set.add('early');
+    if(p.owl) set.add('owl');
+    if(champs.some(c => c.winners.includes(u))) set.add('champ');
+    out[u] = set;
+  }
+  return out;
+}
+
 function render(prevIds){
   const grouped = byPerson();
   const uids = Object.keys(grouped);
@@ -1410,13 +1687,78 @@ function render(prevIds){
     return {uid, name, pages, finished, monthPages: monthly[uid] || 0, weekPages: weekly[uid] || 0, monthFinished: monthFin[uid] || 0, streakCount: activeStreak(streak)};
   }).sort((a,b)=>b.pages - a.pages);
 
+  // ---- Family goal: one shared target for everyone's pages this month
+  const goalEl = document.getElementById('goalCard');
+  const famMonth = Object.values(monthly).reduce((a, v) => a + v, 0);
+  const lastMonthTotal = Object.values(pagesInMonth(prevMonthKey())).reduce((a, v) => a + v, 0);
+  if(familyGoal){
+    const pct = Math.min(100, Math.round(famMonth / familyGoal.pages * 100));
+    const reached = famMonth >= familyGoal.pages;
+    const dl = daysLeftInMonth();
+    goalEl.innerHTML = `
+      <div class="goal-card${reached ? ' reached' : ''}">
+        <div class="goal-top"><span class="goal-label">🎯 Family goal \u00B7 ${escapeHtml(monthName(currentMonthKey()))}</span><span class="goal-pct">${pct}%</span></div>
+        <div class="goal-nums"><b>${famMonth.toLocaleString()}</b> of ${familyGoal.pages.toLocaleString()} pages</div>
+        <div class="goal-track"><div class="goal-fill" style="width:${pct}%"></div></div>
+        <div class="goal-note">${reached ? '🎉 Goal reached! Every page from here is a bonus.'
+          : `${(familyGoal.pages - famMonth).toLocaleString()} pages to go \u00B7 ${dl === 0 ? 'last day!' : dl === 1 ? '1 day left' : dl + ' days left'}`}${lastMonthTotal > 0 ? ` \u00B7 ${escapeHtml(monthName(prevMonthKey()))}: ${lastMonthTotal.toLocaleString()} pages` : ''}</div>
+      </div>`;
+  } else if(isOwner()){
+    goalEl.innerHTML = `<div class="goal-card goal-empty">🎯 Set a family goal in the owner tools at the bottom of the page.${lastMonthTotal > 0 ? ` Last month the family read ${lastMonthTotal.toLocaleString()} pages.` : ''}</div>`;
+  } else {
+    goalEl.innerHTML = '';
+  }
+
+  // ---- Leaderboard: the podium, list and details all follow the This Month / All-Time and Pages / Books switches
+  const month = leaderboardPeriod === 'month';
+  const valueFor = (s)=>{
+    if(leaderboardMetric === 'books') return month ? s.monthFinished : s.finished;
+    return month ? s.monthPages : s.pages;
+  };
+  const metricStats = [...stats].sort((a,b)=> valueFor(b) - valueFor(a));
+  const topVal = metricStats.length ? valueFor(metricStats[0]) : 0;
+  const champs = monthlyChampions();
+  const reign = (champs[0] && champs[0].ym === prevMonthKey()) ? champs[0] : null;   // last month's winner(s)
+  const nameOf = uid => resolveName(uid, (grouped[uid] && grouped[uid][0] && grouped[uid][0].name) || '');
+  const champBadge = uid => (reign && reign.winners.includes(uid))
+    ? ` <span class="champ" title="${escapeHtml(monthName(reign.ym) + ' champion')}">🏆</span>` : '';
+  const count = (n, one, many) => `${n.toLocaleString()} ${n === 1 ? one : many}`;
+
+  const left = daysLeftInMonth();
+  document.getElementById('boardHeading').textContent = month
+    ? `${monthName(currentMonthKey())} standings · ${left === 0 ? 'last day!' : left === 1 ? '1 day left' : left + ' days left'}`
+    : 'All-time standings';
+
+  // last month's champion gets the spotlight for the first week of the new month
+  const champEl = document.getElementById('championCard');
+  if(reign && new Date().getDate() <= 7){
+    const names = reign.winners.map(nameOf);
+    const p = profiles[reign.winners[0]];
+    const hasPhoto = !!(p && p.photoURL);
+    champEl.innerHTML = `
+      <div class="champ-card">
+        <div class="champ-avatar" style="background:${hasPhoto ? 'transparent' : colorFor(names[0])}">${hasPhoto ? `<img src="${escapeHtml(p.photoURL)}" alt="">` : escapeHtml(initials(names[0]))}</div>
+        <div>
+          <div class="champ-label">🏆 ${escapeHtml(monthName(reign.ym))} ${reign.winners.length > 1 ? 'co-champions' : 'champion'}</div>
+          <div class="champ-name">${escapeHtml(names.join(' & '))}</div>
+          <div class="champ-stats">${reign.pages.toLocaleString()} pages${reign.winners.length > 1 ? ' each' : ' · ' + count(reign.books[0], 'book', 'books')}</div>
+        </div>
+      </div>`;
+  } else {
+    champEl.innerHTML = '';
+  }
+
   const podiumEl = document.getElementById('podium');
   if(stats.length === 0){ podiumEl.innerHTML = ''; }
-  else {
-    const order = [1,0,2].filter(i => stats[i]);
+  else if(topVal <= 0){
+    podiumEl.innerHTML = `<div class="podium-empty">${leaderboardMetric === 'books'
+      ? (month ? 'No books finished yet this month. Who will be first?' : 'No finished books yet. Who will be first?')
+      : 'New month! The first to log pages takes the lead.'}</div>`;
+  } else {
+    const order = [1,0,2].filter(i => metricStats[i]);
     const classNames = {0:'first',1:'second',2:'third'};
     podiumEl.innerHTML = order.map(i=>{
-      const s = stats[i]; const cls = classNames[i];
+      const s = metricStats[i]; const cls = classNames[i]; const v = valueFor(s);
       const crown = i===0 ? '<div class="p-crown">👑</div>' : '';
       const p = profiles[s.uid];
       return `
@@ -1428,8 +1770,8 @@ function render(prevIds){
             : `<div class="p-avatar-fallback" style="background:${colorFor(s.name)};width:100%;height:100%;">${escapeHtml(initials(s.name))}</div>`}
         </div>
         <div class="p-rank">#${i+1}</div>
-        <div class="p-name">${escapeHtml(s.name)} ${s.streakCount>1?`<span class="streak">🔥${s.streakCount}</span>`:''}</div>
-        <div class="p-pages">${s.pages.toLocaleString()}p</div>
+        <div class="p-name">${escapeHtml(s.name)}${champBadge(s.uid)} ${s.streakCount>1?`<span class="streak">🔥${s.streakCount}</span>`:''}</div>
+        <div class="p-pages">${leaderboardMetric === 'books' ? count(v, 'book', 'books') : v.toLocaleString() + 'p'}</div>
       </div>`;
     }).join('');
   }
@@ -1438,27 +1780,26 @@ function render(prevIds){
   if(stats.length === 0){
     board.innerHTML = `<div class="card" style="text-align:center;color:var(--parchment-2);opacity:0.6;">No progress logged yet — be the first!</div>`;
   } else {
-    const valueFor = (s)=>{
-      if(leaderboardMetric === 'books') return leaderboardPeriod === 'month' ? s.monthFinished : s.finished;
-      return leaderboardPeriod === 'month' ? s.monthPages : s.pages;
-    };
-    const metricStats = [...stats].sort((a,b)=> valueFor(b) - valueFor(a));
-    const maxVal = Math.max(1, valueFor(metricStats[0]));
+    const maxVal = Math.max(1, topVal);
     const unitLabel = leaderboardMetric === 'books'
-      ? (leaderboardPeriod === 'month' ? 'books this month' : 'books')
-      : (leaderboardPeriod==='month' ? 'pages this month' : 'pages');
+      ? (month ? 'books this month' : 'books')
+      : (month ? 'pages this month' : 'pages');
     board.innerHTML = metricStats.map((s,i)=>{
       const badge = badgeFor(s.pages);
       const val = valueFor(s);
       const pct = Math.round((val / maxVal) * 100);
-      const rankCls = i===0 ? 'r1' : i===1 ? 'r2' : i===2 ? 'r3' : '';
+      const lead = i === 0 && val > 0;
+      const rankCls = val <= 0 ? '' : i===0 ? 'r1' : i===1 ? 'r2' : i===2 ? 'r3' : '';   // no medals for a zero
+      const sub = month
+        ? `${count(s.monthPages, 'page', 'pages')} · ${count(s.monthFinished, 'book', 'books')} this month`
+        : `${count(s.finished, 'book', 'books')} · ${count(s.pages, 'page', 'pages')} all-time`;
       return `
-      <div class="row ${i===0?'lead':''}">
+      <div class="row ${lead?'lead':''}">
         <div class="rank-badge ${rankCls}">${i+1}</div>
         <div class="avatar" style="background:${avatarStyleBg(s.uid, s.name)}">${avatarHtml(s.uid, s.name)}</div>
         <div class="who">
-          <div class="name">${escapeHtml(s.name)} ${i===0?'👑':''} ${s.streakCount>1?`<span class="streak">🔥${s.streakCount}</span>`:''} <span class="badges">${badge?`<span class="badge">${badge}</span>`:''}</span></div>
-          <div class="sub">${s.finished} books · ${s.pages.toLocaleString()} pages all-time</div>
+          <div class="name">${escapeHtml(s.name)} ${lead?'👑':''}${champBadge(s.uid)} ${s.streakCount>1?`<span class="streak">🔥${s.streakCount}</span>`:''} <span class="badges">${badge?`<span class="badge">${badge}</span>`:''}</span></div>
+          <div class="sub">${sub}</div>
           <div class="mini-progress"><div class="mini-progress-fill" style="width:${pct}%;"></div></div>
         </div>
         <div>
@@ -1467,6 +1808,74 @@ function render(prevIds){
         </div>
       </div>`;
     }).join('');
+  }
+
+  // trophy case of past champions (the panel itself stays put, so it doesn't snap shut when the screen redraws)
+  const trophyCase = document.getElementById('trophyCase');
+  if(champs.length){
+    trophyCase.style.display = '';
+    document.getElementById('trophySummary').textContent = `🏆 Past champions (${champs.length})`;
+    document.getElementById('trophyList').innerHTML = champs.slice(0, 12).map(c => `
+      <div class="trophy-row">
+        <span class="t-month">${escapeHtml(monthName(c.ym, true))}</span>
+        <span class="t-who">${escapeHtml(c.winners.map(nameOf).join(' & '))}</span>
+        <span class="t-pages">${c.pages.toLocaleString()}p</span>
+      </div>`).join('');
+  } else {
+    trophyCase.style.display = 'none';
+  }
+
+  // ---- Recap picture: months that have any activity, newest first (only rebuilt when that list changes)
+  const recapRow = document.getElementById('recapRow');
+  const curYm = currentMonthKey();
+  const recapMonths = [...new Set(history.filter(h => h.timestamp && entryCounts(h)).map(h => ymKey(new Date(h.timestamp))))]
+    .filter(m => /^\d{4}-\d{2}$/.test(m) && m <= curYm).sort().reverse();
+  if(recapMonths.length){
+    recapRow.style.display = '';
+    const sel = document.getElementById('recapMonth');
+    const sig = recapMonths.join(',') + '|' + curYm;
+    if(sel.dataset.sig !== sig){
+      const keep = sel.value;
+      sel.innerHTML = recapMonths.map(m => `<option value="${m}">${escapeHtml(m === curYm ? monthName(m) + ' (so far)' : monthName(m, true))}</option>`).join('');
+      sel.value = recapMonths.includes(keep) ? keep : (recapMonths.find(m => m < curYm) || recapMonths[0]);
+      sel.dataset.sig = sig;
+    }
+  } else {
+    recapRow.style.display = 'none';
+  }
+
+  // ---- Badges
+  const earned = badgesByPerson(champs);
+  if(booksLoaded && historyLoaded){
+    if(badgeBaseline){
+      const news = [];
+      for(const u in earned){ for(const id of earned[u]){ if(!(badgeBaseline[u] && badgeBaseline[u].has(id))) news.push([u, id]); } }
+      if(news.length === 1){
+        const bd = BADGES.find(x => x.id === news[0][1]);
+        showToast(`🎖️ ${firstNameFor(news[0][0])} earned ${bd.icon} ${bd.name}!`);
+      } else if(news.length > 1){
+        showToast(`🎖️ New badges for ${[...new Set(news.map(n => firstNameFor(n[0])))].join(' & ')}!`);
+      }
+    }
+    badgeBaseline = earned;
+  }
+  const badgeEl = document.getElementById('badgeBoard');
+  if(!stats.length){
+    badgeEl.innerHTML = `<div class="empty-note">Badges show up here once people start reading.</div>`;
+  } else {
+    badgeEl.innerHTML = stats.map(s => ({ s, set: earned[s.uid] || new Set() }))
+      .sort((a, b) => b.set.size - a.set.size || b.s.pages - a.s.pages)
+      .map(({ s, set }) => `
+      <div class="badge-person">
+        <div class="badge-head">
+          <div class="avatar" style="background:${avatarStyleBg(s.uid, s.name)}">${avatarHtml(s.uid, s.name)}</div>
+          <b>${escapeHtml(s.name)}</b>
+          <span class="badge-count">${set.size} of ${BADGES.length}</span>
+        </div>
+        ${set.size
+          ? `<div class="badge-chips">${BADGES.filter(bd => set.has(bd.id)).map(bd => `<button class="badge-chip" data-badge="${bd.id}" title="${escapeHtml(bd.name + ': ' + bd.how)}" aria-label="${escapeHtml(bd.name)}">${bd.icon}</button>`).join('')}</div>`
+          : '<div class="badge-none">No badges yet. The first one is close!</div>'}
+      </div>`).join('');
   }
 
   // Stakes — "X is leading!" prize cards, tied to the leader for the selected period
@@ -1517,9 +1926,11 @@ function render(prevIds){
   if(active.length === 0){
     readingEl.innerHTML = `<div class="empty-note">Nobody has an open book right now.</div>`;
   } else {
+    const nowMs = Date.now();
     readingEl.innerHTML = active.map(b=>{
-      const changed = prevIds && !prevIds.has(b.id+':'+b.pagesRead);
+      const changed = (flashUntil[b.id] || 0) > nowMs;
       const pct = b.totalPages ? Math.min(100, Math.round(b.pagesRead/b.totalPages*100)) : null;
+      const mine = !!currentUser && b.uid === currentUser.uid;
       return `
       <div class="reading-card ${changed?'flash':''}" data-id="${escapeHtml(b.id)}">
         <div class="reading-top">
@@ -1531,6 +1942,12 @@ function render(prevIds){
           <span>page ${b.pagesRead}${b.totalPages?` of ${b.totalPages}`:''}</span>
           <span>${pct!==null?pct+'%':''}</span>
         </div>
+        ${mine ? `<div class="quick-row">
+          <button data-act="add" data-n="10">+10</button>
+          <button data-act="add" data-n="25">+25</button>
+          <button data-act="page">Page #</button>
+          ${b.totalPages ? '<button class="q-finish" data-act="finish">Finished</button>' : ''}
+        </div>` : ''}
       </div>`;
     }).join('');
   }
@@ -1566,27 +1983,47 @@ function render(prevIds){
     queueMissingCovers();
   }
 
-  // Activity Log — every logged update, newest first, pulled from history
+  // Activity Log — every logged update, newest first, pulled from history (with cheers)
   const activityEl = document.getElementById('activityLog');
   const visibleHistory = history.filter(entryCounts);
   if(visibleHistory.length === 0){
     activityEl.innerHTML = `<div class="empty-note">No activity logged yet.</div>`;
   } else {
+    const me = currentUser ? currentUser.uid : null;
+    const lastLog = lastLogTimeByBook();
     const sortedHistory = [...visibleHistory].sort((a,b)=> new Date(b.timestamp) - new Date(a.timestamp)).slice(0, 30);
+    const oldList = activityEl.querySelector('.activity-list');
+    const keepScroll = oldList ? oldList.scrollTop : 0;
     activityEl.innerHTML = `<div class="activity-list">` + sortedHistory.map(h=>{
-      const bk = h.bookId ? books.find(b => b.id === h.bookId) : null;
+      // older entries aren't linked to their book yet (until the one-time repair), so match those by reader + title
+      const bk = h.bookId ? books.find(b => b.id === h.bookId) : books.find(b => b.uid === h.uid && normTitle(b.title) === normTitle(h.title));
       const title = bk ? bk.title : h.title;
       const what = h.delta < 0
         ? `adjusted <span class="activity-delta neg">${h.delta}</span> pages in`
         : `read <span class="activity-delta">+${h.delta}</span> pages in`;
+      const finishedHere = !!(bk && bk.finished && h.delta > 0 && (bk.finishedAt === h.timestamp || (!bk.finishedAt && lastLog[bk.id] === h.timestamp)));
+      const cheers = h.cheers || {};
+      let cheerHtml = '';
+      if(me && h.uid === me){
+        const from = Object.keys(cheers).filter(u => u !== me);
+        if(from.length) cheerHtml = `<div class="cheer-bar"><span class="cheer-from">${from.map(u => escapeHtml(cheers[u] + ' ' + firstNameFor(u))).join(' · ')}</span></div>`;
+      } else if(me){
+        cheerHtml = `<div class="cheer-bar">${CHEERS.map(e => {
+          const n = Object.keys(cheers).filter(u => cheers[u] === e).length;
+          return `<button class="cheer${cheers[me] === e ? ' on' : ''}" data-e="${e}" aria-pressed="${cheers[me] === e}">${e}${n ? ' ' + n : ''}</button>`;
+        }).join('')}</div>`;
+      }
       return `
-      <div class="activity-row">
+      <div class="activity-row" data-key="${escapeHtml(h._key)}">
         <div class="activity-info">
-          <b>${escapeHtml(resolveName(h.uid, h.name))}</b> ${what} ${escapeHtml(title)}
+          <b>${escapeHtml(resolveName(h.uid, h.name))}</b> ${what} ${escapeHtml(title)}${finishedHere ? ' <span class="activity-done">and finished it! 🎉</span>' : ''}
+          ${cheerHtml}
         </div>
         <div class="activity-time">${formatDateTime(h.timestamp)}</div>
       </div>`;
     }).join('') + `</div>`;
+    const newList = activityEl.querySelector('.activity-list');
+    if(newList) newList.scrollTop = keepScroll;          // a cheer or a live update doesn't jump the list back to the top
   }
 
   // Manage entries — edit prefills the update form, delete removes it
@@ -1732,7 +2169,8 @@ function renderProfilePreview(){
   if(!currentUser) return;
   const p = profiles[currentUser.uid];
   const name = (p && p.displayName) || currentUser.displayName || 'Reader';
-  document.getElementById('profileName').value = name;
+  // don't overwrite a name someone is in the middle of typing
+  if(document.getElementById('profileForm').style.display === 'none') document.getElementById('profileName').value = name;
   if(p && p.photoURL){
     preview.style.background = 'transparent';
     preview.innerHTML = `<img src="${escapeHtml(p.photoURL)}" alt="">`;
@@ -1762,6 +2200,10 @@ function renderProfilePreview(){
 document.getElementById('profileEditToggle').addEventListener('click', ()=>{
   const form = document.getElementById('profileForm');
   const isOpen = form.style.display !== 'none';
+  if(!isOpen && currentUser){
+    const p = profiles[currentUser.uid];
+    document.getElementById('profileName').value = (p && p.displayName) || currentUser.displayName || 'Reader';
+  }
   form.style.display = isOpen ? 'none' : 'block';
   document.getElementById('profileEditToggle').textContent = isOpen ? 'Edit' : 'Close';
 });
@@ -1808,33 +2250,44 @@ document.getElementById('profileBtn').addEventListener('click', async ()=>{
 function applyUpdate(list, a){
   const next = list.map(b => ({...b}));
   const key = (u,t)=> u+'|'+t.toLowerCase();
-  // If this came from "Edit" in Manage Entries, target that exact book by ID (even if already finished);
+  const quick = !!(a.add || a.finish);       // one-tap buttons: move one exact book forward, nothing else
+  // If this came from "Edit" in Manage Entries (or a one-tap button), target that exact book by ID;
   // otherwise match an in-progress book with the same reader + title.
   let target = a.editingId ? next.find(b => b.id === a.editingId && b.uid === a.uid) : null;
-  if(!target) target = next.find(b => !b.finished && key(b.uid,b.title) === key(a.uid,a.title));
+  if(quick){
+    if(!target) return { error: "That book couldn't be found. It may have just been changed or removed." };
+    if(target.finished) return { error: 'That book is already finished.' };
+    if(a.finish && !target.totalPages) return { error: "Add the book's total pages first." };
+  } else if(!target){
+    target = next.find(b => !b.finished && key(b.uid,b.title) === key(a.uid,a.title));
+  }
+  let current = a.current;
+  if(a.add) current = target.totalPages ? Math.min(target.pagesRead + a.add, target.totalPages) : target.pagesRead + a.add;
+  if(a.finish) current = target.totalPages;
+  if(quick && current === target.pagesRead) return { error: 'Already on the last page.' };
 
   // A page number can never be past the book's total - whether the total was typed now or saved earlier.
   const knownTotal = a.total || (target && target.totalPages) || null;
-  if(knownTotal && a.current > knownTotal){
+  if(knownTotal && current > knownTotal){
     return { error: a.total ? "Current page can't be past the total."
                             : "Current page can't be past this book's total of " + knownTotal.toLocaleString() + " pages." };
   }
 
   const prevPages = target ? target.pagesRead : 0;
-  const delta = a.current - prevPages; // negative = the page number was corrected downward
+  const delta = current - prevPages; // negative = the page number was corrected downward
   const wasFinishedBefore = target ? target.finished : false;
   if(target){
-    target.title = a.title;
-    target.pagesRead = a.current;
+    if(!quick) target.title = a.title;
+    target.pagesRead = current;
     if(a.total) target.totalPages = a.total;
     target.updatedAt = a.now;
-    target.finished = target.totalPages ? a.current >= target.totalPages : false;
+    target.finished = target.totalPages ? current >= target.totalPages : false;
     if(target.finished && !wasFinishedBefore) target.finishedAt = a.now;
   } else {
-    const isFinished = a.total ? a.current >= a.total : false;
+    const isFinished = a.total ? current >= a.total : false;
     target = {
       id: a.newId,
-      uid: a.uid, name: a.name, title: a.title, pagesRead: a.current, totalPages: a.total,
+      uid: a.uid, name: a.name, title: a.title, pagesRead: current, totalPages: a.total,
       finished: isFinished,
       finishedAt: isFinished ? a.now : null,
       createdAt: a.now, updatedAt: a.now
@@ -1851,7 +2304,7 @@ function loadPending(){ try{ const v = JSON.parse(localStorage.getItem(PENDING_K
 function savePending(list){ try{ if(list.length) localStorage.setItem(PENDING_KEY, JSON.stringify(list.slice(-25))); else localStorage.removeItem(PENDING_KEY); }catch(e){} }
 function removePending(key){ savePending(loadPending().filter(x => x.key !== key)); }
 function sendLogEntry(item){
-  return db.ref('history/' + item.key).set(item.entry).then(() => removePending(item.key));
+  return db.ref('history/' + item.key).update(item.entry).then(() => removePending(item.key));   // merge, so a re-send never wipes cheers
 }
 function recordLog(entry){
   const item = { key: '-L' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8), entry };
@@ -1871,6 +2324,38 @@ function bumpStreak(uid){
   return db.ref('streaks').transaction(raw => JSON.stringify(applyStreak(parseStreaks(raw), uid)));
 }
 
+// One save path for the form and the one-tap buttons.
+// a: { title, current, total, editingId }  or  { editingId, add: 10 }  or  { editingId, finish: true }
+async function saveProgress(a){
+  if(!isConfigured || !db) return { ok: false, error: 'Firebase not configured yet — see the banner above.' };
+  if(!currentUser) return { ok: false, error: 'Sign in first.' };
+  const uid = currentUser.uid;
+  const name = resolveName(uid, currentUser.displayName);
+  const now = new Date().toISOString();
+  const args = { uid, name, title: a.title || '', current: a.current, add: a.add || 0, finish: !!a.finish, total: a.total || null,
+                 editingId: a.editingId || null, now, newId: Date.now()+'-'+Math.random().toString(36).slice(2) };
+  let outcome = null;
+  // The change is applied to the newest saved list inside a transaction, so two people saving at the
+  // same moment (or a phone that woke up with an old copy) can never wipe out each other's books.
+  const res = await db.ref('books').transaction(raw => {
+    const list = parseList(raw);
+    if(list === null){ outcome = { error: "The saved book list couldn't be read, so nothing was changed." }; return; }
+    outcome = applyUpdate(list, args);
+    if(outcome.error) return;               // returning nothing cancels the save
+    return JSON.stringify(outcome.list);
+  });
+  if(!res.committed || !outcome || outcome.error){
+    return { ok: false, error: (outcome && outcome.error) || "Couldn't save — check your connection and try again." };
+  }
+  if(outcome.delta !== 0){
+    const entry = { uid, name, title: outcome.target.title, bookId: outcome.target.id, delta: outcome.delta, timestamp: now };
+    if(outcome.delta < 0) entry.kind = 'correction';
+    recordLog(entry);
+  }
+  if(outcome.delta > 0) bumpStreak(uid).catch(() => {});
+  return { ok: true, outcome, name };
+}
+
 document.getElementById('addBtn').addEventListener('click', async ()=>{
   const titleEl = document.getElementById('title');
   const currentEl = document.getElementById('current');
@@ -1880,8 +2365,6 @@ document.getElementById('addBtn').addEventListener('click', async ()=>{
   if(!isConfigured){ msg.style.color='var(--brick)'; msg.textContent = 'Firebase not configured yet — see the banner above.'; return; }
   if(!currentUser){ msg.style.color='var(--brick)'; msg.textContent = 'Sign in first.'; return; }
 
-  const uid = currentUser.uid;
-  const name = resolveName(uid, currentUser.displayName);
   const title = titleEl.value.trim();
   const current = wholeNumber(currentEl.value);
   const total = wholeNumber(totalEl.value) || null;
@@ -1895,34 +2378,14 @@ document.getElementById('addBtn').addEventListener('click', async ()=>{
 
   const btn = document.getElementById('addBtn');
   btn.disabled = true; btn.textContent = 'Updating...';
-
-  const now = new Date().toISOString();
-  const args = { uid, name, title, current, total, editingId, now, newId: Date.now()+'-'+Math.random().toString(36).slice(2) };
-  let outcome = null;
-
   try{
-    // The change is applied to the newest saved list inside a transaction, so two people saving at the
-    // same moment (or a phone that woke up with an old copy) can never wipe out each other's books.
-    const res = await db.ref('books').transaction(raw => {
-      const list = parseList(raw);
-      if(list === null){ outcome = { error: "The saved book list couldn't be read, so nothing was changed." }; return; }
-      outcome = applyUpdate(list, args);
-      if(outcome.error) return;               // returning nothing cancels the save
-      return JSON.stringify(outcome.list);
-    });
-
-    if(!res.committed || !outcome || outcome.error){
+    const r = await saveProgress({ title, current, total, editingId });
+    if(!r.ok){
       msg.style.color = 'var(--brick)';
-      msg.textContent = (outcome && outcome.error) || "Couldn't save — check your connection and try again.";
+      msg.textContent = r.error;
     } else {
-      if(outcome.delta !== 0){
-        const entry = { uid, name, title, bookId: outcome.target.id, delta: outcome.delta, timestamp: now };
-        if(outcome.delta < 0) entry.kind = 'correction';
-        recordLog(entry);
-      }
-      if(outcome.delta > 0) bumpStreak(uid).catch(() => {});
       msg.style.color = 'var(--sage)';
-      msg.textContent = outcome.target.finished ? `🎉 ${name} finished "${title}"!` : `Updated ${name}'s progress in "${title}".`;
+      msg.textContent = r.outcome.target.finished ? `🎉 ${r.name} finished "${title}"!` : `Updated ${r.name}'s progress in "${title}".`;
       currentEl.value = '';
       editingId = null;
       setEditingBanner();
@@ -1933,6 +2396,278 @@ document.getElementById('addBtn').addEventListener('click', async ()=>{
   }
   btn.disabled = false; btn.textContent = 'Update my progress';
 });
+
+// One-tap progress on your own "Currently reading" cards
+document.getElementById('reading').addEventListener('click', async (e)=>{
+  const btn = e.target.closest('.quick-row button');
+  if(!btn || btn.disabled) return;
+  const card = btn.closest('.reading-card');
+  const b = card && books.find(x => x.id === card.dataset.id);
+  if(!b || !currentUser || b.uid !== currentUser.uid) return;
+  const act = btn.dataset.act;
+  if(act === 'page'){                       // jump to the form with this book filled in
+    editingId = null; setEditingBanner();
+    document.getElementById('title').value = b.title;
+    document.getElementById('total').value = b.totalPages || '';
+    const cur = document.getElementById('current');
+    cur.value = '';
+    const msg = document.getElementById('msg');
+    msg.style.color = 'var(--sage)';
+    msg.textContent = `On page ${b.pagesRead} now. Type your new page and tap Update.`;
+    cur.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    cur.focus({ preventScroll: true });
+    return;
+  }
+  card.querySelectorAll('.quick-row button').forEach(x => { x.disabled = true; });
+  try{
+    const r = await saveProgress(act === 'finish' ? { editingId: b.id, finish: true } : { editingId: b.id, add: Number(btn.dataset.n) || 0 });
+    if(!r.ok) showToast(r.error);
+    else {
+      const t = r.outcome.target;
+      showToast(t.finished ? `🎉 Finished “${t.title}”!` : `+${r.outcome.delta} pages · now on page ${t.pagesRead}`);
+    }
+  }catch(err){
+    showToast("Couldn't save — check your connection and try again.");
+  }
+  card.querySelectorAll('.quick-row button').forEach(x => { x.disabled = false; });   // usually redrawn by then anyway
+});
+
+let toastTimer = null;
+function showToast(text){
+  const el = document.getElementById('toast');
+  el.textContent = text;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2600);
+}
+
+// Cheers: one per person per update; tapping the same one again takes it back
+document.getElementById('activityLog').addEventListener('click', async (e)=>{
+  const btn = e.target.closest('.cheer');
+  if(!btn || !currentUser || !db) return;
+  const row = btn.closest('.activity-row');
+  const h = row && history.find(x => x._key === row.dataset.key);
+  const emoji = btn.dataset.e;
+  if(!h || h.uid === currentUser.uid || !CHEERS.includes(emoji)) return;
+  const mineNow = h.cheers && h.cheers[currentUser.uid];
+  try{ await db.ref('history/' + h._key + '/cheers/' + currentUser.uid).set(mineNow === emoji ? null : emoji); }
+  catch(err){ showToast("Couldn't send that cheer. Check your connection and try again."); }
+});
+
+// Badges: the how-to-earn list, and tapping a badge says what it is
+document.getElementById('badgeLegend').innerHTML = BADGES.map(bd =>
+  `<div class="badge-rule"><span class="br-icon">${bd.icon}</span><span><b>${escapeHtml(bd.name)}</b><small>${escapeHtml(bd.how)}</small></span></div>`).join('');
+document.getElementById('badgeBoard').addEventListener('click', (e)=>{
+  const chip = e.target.closest('.badge-chip');
+  const bd = chip && BADGES.find(x => x.id === chip.dataset.badge);
+  if(bd) showToast(`${bd.icon} ${bd.name}: ${bd.how}`);
+});
+
+// Family goal (owner tools)
+document.getElementById('goalSaveBtn').addEventListener('click', async ()=>{
+  if(!isOwner() || !db) return;
+  const input = document.getElementById('goalInput');
+  const msg = document.getElementById('ownerMsg');
+  const typed = input.value.trim();
+  const n = wholeNumber(typed);
+  if(typed && (!n || n < 1)){ msg.style.color = 'var(--brick)'; msg.textContent = 'Type a number of pages, like 5000 (or leave it blank to turn the goal off).'; return; }
+  try{
+    await db.ref('familyGoal').set(typed ? { pages: n, by: currentUser.uid, at: new Date().toISOString() } : null);
+    msg.style.color = 'var(--sage)';
+    msg.textContent = typed ? `Family goal set: ${n.toLocaleString()} pages each month.` : 'Family goal turned off.';
+    input.blur();
+  }catch(err){
+    msg.style.color = 'var(--brick)'; msg.textContent = "Couldn't save the goal. Check your connection and try again.";
+  }
+});
+
+/* ---------- Monthly recap picture ---------- */
+function loadImg(src){
+  return new Promise(res => {
+    if(!src) return res(null);
+    const img = new Image();
+    if(!/^data:/i.test(src)) img.crossOrigin = 'anonymous';   // only pictures that allow it, so the drawing can still be saved
+    const t = setTimeout(() => res(null), 4000);
+    img.onload = () => { clearTimeout(t); res(img); };
+    img.onerror = () => { clearTimeout(t); res(null); };
+    img.src = src;
+  });
+}
+function roundRect(ctx, x, y, w, h, r){
+  ctx.beginPath(); ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
+}
+function fitText(ctx, text, maxW){
+  let t = String(text);
+  if(ctx.measureText(t).width <= maxW) return t;
+  while(t.length > 1 && ctx.measureText(t + '…').width > maxW) t = t.slice(0, -1);
+  return t + '…';
+}
+async function drawRecap(ym){
+  try{
+    if(document.fonts && document.fonts.load){
+      await Promise.all([document.fonts.load("700 80px 'Fraunces'"), document.fonts.load("600 34px 'Inter'"), document.fonts.load("600 34px 'IBM Plex Mono'")]);
+    }
+  }catch(e){}
+  const per = pagesInMonth(ym);
+  const fin = booksFinishedIn(ym);
+  const lastLog = lastLogTimeByBook();
+  fin.sort((a, b) => String(effectiveFinishedAt(a, lastLog)).localeCompare(String(effectiveFinishedAt(b, lastLog))));
+  const booksBy = {};
+  fin.forEach(b => { booksBy[b.uid] = (booksBy[b.uid] || 0) + 1; });
+  const people = [...new Set([...Object.keys(per), ...Object.keys(booksBy)])]
+    .map(u => ({ uid: u, name: displayNameFor(u), pages: per[u] || 0, books: booksBy[u] || 0 }))
+    .filter(p => p.pages > 0 || p.books > 0)
+    .sort((a, b) => b.pages - a.pages || b.books - a.books);
+  const famPages = people.reduce((a, p) => a + p.pages, 0);
+  const top = (people.length && people[0].pages > 0) ? people.filter(p => p.pages === people[0].pages) : [];
+  const rows = people.slice(0, 7);
+  const bookRows = fin.slice(0, 10);
+  // the goal only counts for months from when it was set
+  const goal = (familyGoal && (!familyGoal.at || isNaN(new Date(familyGoal.at).getTime()) || ym >= ymKey(new Date(familyGoal.at)))) ? familyGoal : null;
+
+  // height grows with the lists, so nothing gets cut off
+  const W = 1080;
+  let H = 300 + (top.length ? 270 : 0) + 180 + (goal ? 96 : 0) + 66 + rows.length * 64 + 24
+        + (bookRows.length ? 72 + bookRows.length * 46 + (fin.length > bookRows.length ? 46 : 0) + 20 : 0) + 110;
+  H = Math.max(H, 1080);
+  const c = document.createElement('canvas'); c.width = W; c.height = H;
+  const ctx = c.getContext('2d');
+  const SERIF = "'Fraunces', Georgia, serif", SANS = "'Inter', system-ui, sans-serif", MONO = "'IBM Plex Mono', ui-monospace, monospace";
+
+  // background
+  ctx.fillStyle = '#1F2E28'; ctx.fillRect(0, 0, W, H);
+  let g = ctx.createRadialGradient(160, 120, 10, 160, 120, 760); g.addColorStop(0, 'rgba(217,164,65,0.22)'); g.addColorStop(1, 'rgba(217,164,65,0)');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  g = ctx.createRadialGradient(W - 120, H - 120, 10, W - 120, H - 120, 760); g.addColorStop(0, 'rgba(166,61,64,0.22)'); g.addColorStop(1, 'rgba(166,61,64,0)');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+
+  // header
+  ctx.fillStyle = '#D9A441'; ctx.font = `700 30px ${SANS}`; ctx.fillText('THE FAMILY SHELF', 72, 110);
+  ctx.fillStyle = '#F4EBD9'; ctx.font = `700 84px ${SERIF}`; ctx.fillText(monthName(ym, true), 72, 200);
+  ctx.fillStyle = '#EADFC7'; ctx.font = `500 36px ${SANS}`; ctx.fillText(ym === currentMonthKey() ? 'Monthly recap · so far' : 'Monthly recap', 72, 252);
+  let y = 300;
+
+  // champion
+  if(top.length){
+    roundRect(ctx, 56, y, W - 112, 230, 28);
+    const cg = ctx.createLinearGradient(56, y, W - 56, y + 230); cg.addColorStop(0, 'rgba(217,164,65,0.32)'); cg.addColorStop(1, 'rgba(217,164,65,0.06)');
+    ctx.fillStyle = cg; ctx.fill(); ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(217,164,65,0.85)'; ctx.stroke();
+    const r = 75, cx = 56 + 40 + r, cy = y + 115;
+    const prof = profiles[top[0].uid];
+    const img = await loadImg(prof && prof.photoURL);
+    ctx.save(); ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.closePath();
+    if(img){
+      ctx.clip();
+      const sc = Math.max((2 * r) / img.width, (2 * r) / img.height), iw = img.width * sc, ih = img.height * sc;
+      ctx.drawImage(img, cx - iw / 2, cy - ih / 2, iw, ih);
+    } else {
+      ctx.fillStyle = colorFor(top[0].name); ctx.fill();
+      ctx.fillStyle = '#1a1a1a'; ctx.font = `700 64px ${SERIF}`; ctx.textAlign = 'center'; ctx.fillText(initials(top[0].name), cx, cy + 22); ctx.textAlign = 'left';
+    }
+    ctx.restore();
+    ctx.beginPath(); ctx.arc(cx, cy, r + 4, 0, Math.PI * 2); ctx.lineWidth = 8; ctx.strokeStyle = '#FFD45C'; ctx.stroke();
+    const tx = cx + r + 40, tw = W - 56 - 36 - tx;
+    ctx.fillStyle = '#FFD45C'; ctx.font = `700 30px ${SANS}`; ctx.fillText(top.length > 1 ? '🏆 CO-CHAMPIONS' : '🏆 CHAMPION', tx, y + 74);
+    ctx.fillStyle = '#F4EBD9'; ctx.font = `700 ${top.length > 1 ? 44 : 58}px ${SERIF}`; ctx.fillText(fitText(ctx, top.map(p => p.name).join(' & '), tw), tx, y + 142);
+    ctx.fillStyle = '#EADFC7'; ctx.font = `500 32px ${SANS}`;
+    ctx.fillText(`${top[0].pages.toLocaleString()} pages${top.length > 1 ? ' each' : ' · ' + top[0].books + (top[0].books === 1 ? ' book' : ' books')}`, tx, y + 192);
+    y += 270;
+  }
+
+  // family totals
+  const boxW = (W - 112 - 24) / 2;
+  const statBox = (x, big, small) => {
+    roundRect(ctx, x, y, boxW, 150, 22); ctx.fillStyle = 'rgba(41,61,52,0.95)'; ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = 'rgba(244,235,217,0.12)'; ctx.stroke();
+    ctx.fillStyle = '#D9A441'; ctx.font = `600 56px ${MONO}`; ctx.fillText(big, x + 32, y + 84);
+    ctx.fillStyle = '#EADFC7'; ctx.font = `500 28px ${SANS}`; ctx.fillText(small, x + 32, y + 126);
+  };
+  statBox(56, famPages.toLocaleString(), 'pages as a family');
+  statBox(56 + boxW + 24, String(fin.length), fin.length === 1 ? 'book finished' : 'books finished');
+  y += 180;
+
+  // family goal
+  if(goal){
+    const pct = Math.min(100, Math.round(famPages / goal.pages * 100));
+    ctx.fillStyle = '#F4EBD9'; ctx.font = `600 30px ${SANS}`;
+    ctx.fillText(famPages >= goal.pages
+      ? `🎯 Family goal of ${goal.pages.toLocaleString()} pages: reached! 🎉`
+      : `🎯 Family goal: ${pct}% of ${goal.pages.toLocaleString()} pages`, 56, y + 12);
+    roundRect(ctx, 56, y + 34, W - 112, 22, 11); ctx.fillStyle = 'rgba(0,0,0,0.35)'; ctx.fill();
+    if(pct > 0){
+      roundRect(ctx, 56, y + 34, Math.max(22, (W - 112) * pct / 100), 22, 11);
+      const gg = ctx.createLinearGradient(56, 0, W - 56, 0); gg.addColorStop(0, '#7C9473'); gg.addColorStop(1, '#D9A441');
+      ctx.fillStyle = gg; ctx.fill();
+    }
+    y += 96;
+  }
+
+  // standings
+  ctx.fillStyle = '#F4EBD9'; ctx.font = `700 42px ${SERIF}`; ctx.fillText('Standings', 56, y + 26); y += 66;
+  const medal = ['#D9A441', '#C9C9C9', '#B5793A'];
+  rows.forEach((p, i) => {
+    const ry = y + i * 64;
+    ctx.beginPath(); ctx.arc(82, ry + 22, 22, 0, Math.PI * 2); ctx.fillStyle = (i < 3 && p.pages > 0) ? medal[i] : 'rgba(244,235,217,0.15)'; ctx.fill();
+    ctx.fillStyle = (i < 3 && p.pages > 0) ? '#1a1a1a' : '#F4EBD9'; ctx.font = `700 24px ${MONO}`; ctx.textAlign = 'center'; ctx.fillText(String(i + 1), 82, ry + 31);
+    ctx.textAlign = 'left'; ctx.fillStyle = '#F4EBD9'; ctx.font = `600 32px ${SANS}`; ctx.fillText(fitText(ctx, p.name, 500), 124, ry + 33);
+    ctx.textAlign = 'right'; ctx.fillStyle = '#D9A441'; ctx.font = `600 32px ${MONO}`; ctx.fillText(p.pages.toLocaleString() + 'p', W - 220, ry + 33);
+    ctx.fillStyle = '#EADFC7'; ctx.font = `500 26px ${SANS}`; ctx.fillText(p.books + (p.books === 1 ? ' book' : ' books'), W - 56, ry + 33);
+    ctx.textAlign = 'left';
+  });
+  y += rows.length * 64 + 24;
+
+  // books finished
+  if(bookRows.length){
+    ctx.fillStyle = '#F4EBD9'; ctx.font = `700 42px ${SERIF}`; ctx.fillText('Books finished', 56, y + 30); y += 72;
+    bookRows.forEach((b, i) => {
+      const by = y + i * 46;
+      ctx.fillStyle = '#D9A441'; ctx.font = `600 28px ${SANS}`; ctx.fillText('•', 60, by + 26);
+      const who = ' — ' + firstNameFor(b.uid);
+      ctx.font = `500 28px ${SANS}`;
+      const whoW = ctx.measureText(who).width;
+      ctx.fillStyle = '#F4EBD9'; const t = fitText(ctx, b.title, W - 56 - 92 - whoW); ctx.fillText(t, 92, by + 26);
+      ctx.fillStyle = '#EADFC7'; ctx.fillText(who, 92 + ctx.measureText(t).width, by + 26);
+    });
+    y += bookRows.length * 46;
+    if(fin.length > bookRows.length){ ctx.fillStyle = '#EADFC7'; ctx.font = `500 26px ${SANS}`; ctx.fillText(`+ ${fin.length - bookRows.length} more`, 92, y + 26); }
+  }
+
+  // footer
+  ctx.fillStyle = 'rgba(234,223,199,0.55)'; ctx.font = `500 24px ${SANS}`; ctx.textAlign = 'center';
+  ctx.fillText(`Made with The Family Shelf · ${new Date().toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}`, W / 2, H - 48);
+  ctx.textAlign = 'left';
+  return await new Promise(res => c.toBlob(res, 'image/png'));
+}
+let recapUrl = null, recapBlob = null, recapFile = '';
+function closeRecap(){
+  document.getElementById('recapModal').style.display = 'none';
+  document.body.style.overflow = '';
+}
+document.getElementById('recapBtn').addEventListener('click', async ()=>{
+  const ym = document.getElementById('recapMonth').value;
+  if(!ym) return;
+  const btn = document.getElementById('recapBtn');
+  btn.disabled = true; btn.textContent = 'Drawing…';
+  try{
+    const blob = await drawRecap(ym);
+    if(!blob) throw new Error('no picture');
+    if(recapUrl) URL.revokeObjectURL(recapUrl);
+    recapBlob = blob; recapUrl = URL.createObjectURL(blob); recapFile = `family-shelf-${ym}-recap.png`;
+    document.getElementById('recapImg').src = recapUrl;
+    document.getElementById('recapModal').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+  }catch(e){
+    showToast("Couldn't make the picture. Try again in a moment.");
+  }
+  btn.disabled = false; btn.textContent = '📸 Recap picture';
+});
+document.getElementById('recapShare').addEventListener('click', () => { if(recapBlob) shareOrDownload(recapBlob, recapFile, 'image/png'); });
+document.getElementById('recapCancel').addEventListener('click', closeRecap);
+document.getElementById('recapClose').addEventListener('click', closeRecap);
+document.getElementById('recapModal').addEventListener('click', (e) => { if(e.target.id === 'recapModal') closeRecap(); });
+document.addEventListener('keydown', (e) => { if(e.key === 'Escape' && document.getElementById('recapModal').style.display === 'flex') closeRecap(); });
 
 document.getElementById('cancelEditBtn').addEventListener('click', ()=>{
   editingId = null;
@@ -1957,44 +2692,58 @@ document.getElementById('stakeInput').addEventListener('keydown', (e)=>{
   if(e.key === 'Enter') document.getElementById('addStakeBtn').click();
 });
 
-document.getElementById('metricBooksBtn').addEventListener('click', ()=>{
-  leaderboardMetric = 'books';
-  document.getElementById('metricBooksBtn').classList.add('active');
-  document.getElementById('metricPagesBtn').classList.remove('active');
-  render(null);
+// Leaderboard and stakes switches - each phone remembers its last choice
+const VIEW_KEY = 'familyShelfView';
+function loadView(){
+  try{
+    const v = JSON.parse(localStorage.getItem(VIEW_KEY) || '{}') || {};
+    if(v.metric === 'pages' || v.metric === 'books') leaderboardMetric = v.metric;
+    if(v.period === 'month' || v.period === 'all') leaderboardPeriod = v.period;
+    if(v.stakes === 'week' || v.stakes === 'month') stakesPeriod = v.stakes;
+  }catch(e){}
+}
+function saveView(){
+  try{ localStorage.setItem(VIEW_KEY, JSON.stringify({ metric: leaderboardMetric, period: leaderboardPeriod, stakes: stakesPeriod })); }catch(e){}
+}
+function syncViewButtons(){
+  const on = (id, yes) => document.getElementById(id).classList.toggle('active', yes);
+  on('metricPagesBtn', leaderboardMetric === 'pages'); on('metricBooksBtn', leaderboardMetric === 'books');
+  on('periodMonthBtn', leaderboardPeriod === 'month'); on('periodAllBtn', leaderboardPeriod === 'all');
+  on('stakesWeekBtn', stakesPeriod === 'week');        on('stakesMonthBtn', stakesPeriod === 'month');
+}
+[['metricPagesBtn', () => { leaderboardMetric = 'pages'; }],
+ ['metricBooksBtn', () => { leaderboardMetric = 'books'; }],
+ ['periodMonthBtn', () => { leaderboardPeriod = 'month'; }],
+ ['periodAllBtn',   () => { leaderboardPeriod = 'all'; }],
+ ['stakesWeekBtn',  () => { stakesPeriod = 'week'; }],
+ ['stakesMonthBtn', () => { stakesPeriod = 'month'; }]].forEach(([id, choose]) => {
+  document.getElementById(id).addEventListener('click', () => { choose(); saveView(); syncViewButtons(); render(null); });
 });
-document.getElementById('metricPagesBtn').addEventListener('click', ()=>{
-  leaderboardMetric = 'pages';
-  document.getElementById('metricPagesBtn').classList.add('active');
-  document.getElementById('metricBooksBtn').classList.remove('active');
-  render(null);
-});
+loadView();
+syncViewButtons();
 
-document.getElementById('periodAllBtn').addEventListener('click', ()=>{
-  leaderboardPeriod = 'all';
-  document.getElementById('periodAllBtn').classList.add('active');
-  document.getElementById('periodMonthBtn').classList.remove('active');
-  render(null);
-});
-document.getElementById('periodMonthBtn').addEventListener('click', ()=>{
-  leaderboardPeriod = 'month';
-  document.getElementById('periodMonthBtn').classList.add('active');
-  document.getElementById('periodAllBtn').classList.remove('active');
-  render(null);
-});
-
-document.getElementById('stakesWeekBtn').addEventListener('click', ()=>{
-  stakesPeriod = 'week';
-  document.getElementById('stakesWeekBtn').classList.add('active');
-  document.getElementById('stakesMonthBtn').classList.remove('active');
-  render(null);
-});
-document.getElementById('stakesMonthBtn').addEventListener('click', ()=>{
-  stakesPeriod = 'month';
-  document.getElementById('stakesMonthBtn').classList.add('active');
-  document.getElementById('stakesWeekBtn').classList.remove('active');
-  render(null);
-});
+// Saves a file: on phones this opens the share sheet (e.g. "Save to Files"), elsewhere it downloads.
+async function shareOrDownload(data, filename, type){
+  const blob = (data instanceof Blob) ? data : new Blob([data], { type });
+  try{
+    const file = new File([blob], filename, { type });
+    const touch = !!(window.matchMedia && window.matchMedia('(pointer: coarse)').matches);
+    if(touch && navigator.canShare && navigator.canShare({ files: [file] })){
+      await navigator.share({ files: [file], title: filename });
+      return;
+    }
+  }catch(e){
+    if(e && e.name === 'AbortError') return;     // the share sheet was closed
+  }
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 60000);   // give the browser time to save it first
+}
 
 document.getElementById('exportBtn').addEventListener('click', ()=>{
   const rows = [['Reader','Title','Pages Read','Total Pages','Finished','Last Updated']];
@@ -2002,13 +2751,29 @@ document.getElementById('exportBtn').addEventListener('click', ()=>{
     rows.push([resolveName(b.uid, b.name), b.title, b.pagesRead, b.totalPages||'', b.finished?'Yes':'No', b.updatedAt]);
   }
   const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
-  const blob = new Blob([csv], {type:'text/csv'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'family-shelf-export.csv';
-  a.click();
-  URL.revokeObjectURL(url);
+  shareOrDownload(csv, 'family-shelf-export.csv', 'text/csv');
+});
+
+document.getElementById('backupBtn').addEventListener('click', ()=>{
+  if(!isOwner()) return;
+  const msg = document.getElementById('ownerMsg');
+  if(!books.length && !history.length){ msg.style.color = 'var(--brick)'; msg.textContent = 'Nothing has loaded yet. Try again in a moment.'; return; }
+  // Same layout as the Firebase console's "Export JSON", built from the live copy this phone already has
+  const log = {};
+  for(const h of history){ const { _key, ...entry } = h; if(_key) log[_key] = entry; }
+  const backup = {
+    books: JSON.stringify(books),
+    covers: JSON.stringify(covers),
+    history: log,
+    profiles: profiles,
+    stakes: JSON.stringify(stakes),
+    streaks: JSON.stringify(streaks)
+  };
+  const d = new Date();
+  const stamp = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+  shareOrDownload(JSON.stringify(backup, null, 2), `family-shelf-backup-${stamp}.json`, 'application/json');
+  msg.style.color = 'var(--sage)';
+  msg.textContent = `Backup made: ${books.length} books, ${history.length} log entries, ${Object.keys(profiles).length} profiles.`;
 });
 
 window.addEventListener('online', ()=>{ document.getElementById('offlineBanner').classList.remove('show'); flushPendingLog(); });
@@ -2074,7 +2839,9 @@ function detachDataListeners(){ listenerRefs.forEach(r => r.off()); listenerRefs
 function clearLocalData(){
   books = []; profiles = {}; stakes = []; covers = {}; streaks = {}; history = []; editingId = null;
   coversLoaded = false; coverQueue.length = 0;
+  booksLoaded = false; historyLoaded = false; familyGoal = null; badgeBaseline = null;
   if(pickerKey !== null) closeCoverPicker();
+  closeRecap();
   setEditingBanner();
 }
 function isPermissionDenied(err){ return /permission[_ ]denied/i.test(String((err && (err.code || err.message)) || '')); }
@@ -2097,6 +2864,14 @@ function attachDataListeners(){
     for(const b of books){ prevTotals[b.uid] = (prevTotals[b.uid]||0) + b.pagesRead; }
 
     books = parseList(raw) || [];
+    booksLoaded = true;
+
+    // reading cards that just changed stay highlighted for a moment, even if the screen redraws right after
+    if(prevIds.size > 0){
+      const until = Date.now() + 2500;
+      for(const b of books){ if(!prevIds.has(b.id+':'+b.pagesRead)) flashUntil[b.id] = until; }
+      setTimeout(fadeFlashes, 2600);
+    }
 
     const newlyFinishedBooks = books.filter(b => b.finished && !prevFinishedIds.has(b.id));
 
@@ -2149,9 +2924,35 @@ function attachDataListeners(){
 
   listen('history', (snap)=>{
     const raw = snap.val();
-    history = raw ? Object.entries(raw).filter(([k, v]) => v && typeof v === 'object').map(([k, v]) => ({
-      ...v, _key: k, uid: String(v.uid || ''), name: String(v.name || ''), title: String(v.title || ''), delta: Number(v.delta) || 0
+    const goalBefore = (historyLoaded && familyGoal) ? familyMonthTotal() : null;
+    const me = currentUser && currentUser.uid;
+    const prevCheers = {};
+    if(historyLoaded && me) for(const h of history){ if(h.uid === me) prevCheers[h._key] = h.cheers || {}; }
+    history = raw ? Object.entries(raw).filter(([k, v]) => v && typeof v === 'object' && v.uid && v.timestamp).map(([k, v]) => ({
+      ...v, _key: k, uid: String(v.uid || ''), name: String(v.name || ''), title: String(v.title || ''), delta: Number(v.delta) || 0,
+      cheers: cleanCheers(v.cheers)
     })) : [];
+    if(historyLoaded && me){                         // someone cheered one of my updates
+      for(const h of history){
+        if(h.uid !== me) continue;
+        const was = prevCheers[h._key] || {};
+        for(const u in h.cheers){ if(u !== me && h.cheers[u] !== was[u]) showToast(`${firstNameFor(u)} cheered your update ${h.cheers[u]}`); }
+      }
+    }
+    if(goalBefore !== null && familyGoal){           // the family just reached this month's goal together
+      const after = familyMonthTotal();
+      if(goalBefore < familyGoal.pages && after >= familyGoal.pages){
+        celebrate({ epic: true, title: 'FAMILY GOAL!', sub: `Together you read ${familyGoal.pages.toLocaleString()} pages in ${monthName(currentMonthKey())}!` });
+      }
+    }
+    historyLoaded = true;
+    render(null);
+  });
+
+  listen('familyGoal', (snap)=>{
+    familyGoal = parseGoal(snap.val());
+    const gi = document.getElementById('goalInput');
+    if(gi && document.activeElement !== gi) gi.value = familyGoal ? String(familyGoal.pages) : '';
     render(null);
   });
 }
