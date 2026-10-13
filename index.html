@@ -406,6 +406,37 @@
   .owner-tool{width:auto;background:transparent;border:1px solid rgba(244,235,217,0.3);color:var(--parchment-2);
     padding:8px 14px;font-size:0.8rem;margin:4px;}
   .owner-tool-row{display:flex;justify-content:center;flex-wrap:wrap;}
+
+  /* Pick-a-cover */
+  .spine.can-pick{cursor:pointer;}
+  .btn-cover{background:transparent;border:1px solid var(--sage);color:var(--sage);}
+  .covers-credit{font-size:0.68rem;color:var(--parchment-2);opacity:0.45;margin-top:12px;}
+  .covers-credit a{color:inherit;}
+  .picker-backdrop{position:fixed;inset:0;z-index:9000;background:rgba(10,16,13,0.75);
+    display:flex;align-items:flex-end;justify-content:center;padding:12px;}
+  @media (min-width:600px){ .picker-backdrop{align-items:center;} }
+  .picker-card{background:var(--ink-2);border:1px solid rgba(244,235,217,0.14);border-radius:16px;
+    width:100%;max-width:560px;max-height:88vh;overflow-y:auto;padding:16px 14px 14px;}
+  .picker-head{display:flex;align-items:center;gap:10px;margin-bottom:2px;}
+  .picker-head h3{font-family:'Fraunces',serif;font-weight:700;font-size:1.15rem;margin:0;flex:1;}
+  .picker-x{width:auto;background:none;border:none;color:var(--parchment-2);font-size:1.1rem;padding:4px 8px;cursor:pointer;}
+  .picker-for{font-size:0.8rem;color:var(--parchment-2);opacity:0.75;margin-bottom:12px;line-height:1.4;}
+  .picker-search{display:flex;gap:8px;margin-bottom:8px;}
+  .picker-search input{flex:1;min-width:0;}
+  .picker-search button{width:auto;padding:11px 16px;}
+  .picker-msg{font-size:0.8rem;color:var(--parchment-2);opacity:0.85;min-height:1.2em;margin-bottom:10px;}
+  .picker-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;}
+  @media (min-width:480px){ .picker-grid{grid-template-columns:repeat(4,minmax(0,1fr));} }
+  .picker-tile{width:100%;background:transparent;border:2px solid transparent;border-radius:8px;padding:4px;
+    color:var(--parchment);text-align:left;font-weight:500;cursor:pointer;}
+  .picker-tile img{width:100%;aspect-ratio:2/3;object-fit:cover;border-radius:4px;display:block;background:rgba(0,0,0,0.25);}
+  .picker-tile .pt-title{font-size:0.7rem;line-height:1.25;margin-top:4px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+  .picker-tile .pt-meta{font-size:0.62rem;opacity:0.6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .picker-tile.current{border-color:var(--gold);}
+  .picker-actions{display:flex;gap:8px;margin-top:14px;}
+  .picker-actions button{flex:1;background:transparent;border:1px solid rgba(244,235,217,0.3);color:var(--parchment-2);font-weight:600;padding:10px;font-size:0.85rem;}
+  .picker-credit{margin-top:10px;font-size:0.68rem;color:var(--parchment-2);opacity:0.55;text-align:center;}
+  .picker-credit a{color:inherit;}
 </style>
 </head>
 <body>
@@ -477,7 +508,7 @@
   </section>
 
   <section>
-    <div class="section-title">📚 The Shelf</div>
+    <div class="section-title">📚 The Shelf <span class="hint">tap your books to change a cover</span></div>
     <div id="shelves"></div>
   </section>
 
@@ -557,7 +588,30 @@
       <div class="msg" id="ownerMsg"></div>
     </div>
     <button class="reset-link" id="resetBtn" style="display:none;">clear all data</button>
+    <div class="covers-credit">Book covers from <a href="https://openlibrary.org" target="_blank" rel="noopener">Open Library</a></div>
   </footer>
+</div>
+
+<!-- Pick-a-cover -->
+<div id="coverPicker" class="picker-backdrop" style="display:none;">
+  <div class="picker-card" role="dialog" aria-modal="true" aria-labelledby="pickerHeading">
+    <div class="picker-head">
+      <h3 id="pickerHeading">Choose a cover</h3>
+      <button class="picker-x" id="pickerClose" aria-label="Close">✕</button>
+    </div>
+    <div class="picker-for" id="pickerFor"></div>
+    <div class="picker-search">
+      <input id="pickerQuery" type="text" enterkeyhint="search" autocomplete="off" placeholder="Title, series or author">
+      <button id="pickerGo">Search</button>
+    </div>
+    <div class="picker-msg" id="pickerMsg"></div>
+    <div class="picker-grid" id="pickerGrid"></div>
+    <div class="picker-actions">
+      <button id="pickerNone">No cover (plain spine)</button>
+      <button id="pickerCancel">Cancel</button>
+    </div>
+    <div class="picker-credit">Covers from <a href="https://openlibrary.org" target="_blank" rel="noopener">Open Library</a></div>
+  </div>
 </div>
 
 <!-- Firebase SDK -->
@@ -1049,11 +1103,13 @@ function playCelebration(opts, done){
 }
 
 /* ---------- Book covers ---------- */
-// Each title is looked up on Open Library once and the answer is saved for the whole family.
-// Saved values: a cover web address; null = "looked it up, Open Library has no cover";
-// '' = an older blank that may have come from a failed lookup, so it is looked up again.
-// Nothing is looked up until the saved covers have loaded, lookups go one at a time,
-// and a lookup that fails (busy site, weak signal) is never saved as "no cover".
+// Each title's cover is looked up on Open Library and the answer is saved for the whole family.
+// Saved values for a title:
+//   a cover web address -> show that cover
+//   false               -> no cover: the current search found none, or someone chose "No cover"
+//   null or ''          -> an answer from an older version of the app; looked up once more with the current search
+// Nothing is looked up until the saved covers have loaded, lookups go one at a time, a lookup that fails
+// (busy site, weak signal) is never saved, and the automatic search never replaces a saved or chosen cover.
 let coversLoaded = false;
 const coverQueue = [];
 let coverWorkerBusy = false;
@@ -1061,7 +1117,7 @@ function isCoverUrl(v){ return typeof v === 'string' && /^https:\/\//.test(v); }
 function parseCovers(raw){
   try{ const v = raw ? JSON.parse(raw) : {}; return (v && typeof v === 'object' && !Array.isArray(v)) ? v : {}; }catch(e){ return {}; }
 }
-function needsCoverLookup(key){ const v = covers[key]; return v === undefined || v === ''; }
+function needsCoverLookup(key){ const v = covers[key]; return v === undefined || v === null || v === ''; }
 function queueMissingCovers(){
   if(!coversLoaded || !db) return;
   for(const b of books){
@@ -1081,7 +1137,7 @@ async function runCoverQueue(){
     while(coverQueue.length){
       const item = coverQueue.shift();
       if(!needsCoverLookup(item.key)) continue;     // another phone already found it
-      const found = await lookUpCover(item.title);  // a cover address, null (no cover exists) or undefined (lookup failed)
+      const found = await lookUpCover(item.title);  // a cover address, false (none found) or undefined (search failed)
       if(found !== undefined){ try{ await saveCover(item.key, found); }catch(e){} }
       await new Promise(r => setTimeout(r, 300));   // go gently on Open Library
     }
@@ -1089,29 +1145,126 @@ async function runCoverQueue(){
     coverWorkerBusy = false;
   }
 }
-async function lookUpCover(title){
+// Searches Open Library's whole catalogue (titles, authors and more), not only exact titles.
+// Returns { ok: true, items: [...] } listing only results that have a cover, or { ok: false } if the search failed.
+async function searchOpenLibrary(query, limit){
   try{
-    const res = await fetch('https://openlibrary.org/search.json?title='+encodeURIComponent(title)+'&limit=1&fields=cover_i');
-    if(!res.ok) return undefined;
+    const res = await fetch('https://openlibrary.org/search.json?q=' + encodeURIComponent(query) + '&limit=' + limit + '&fields=title,author_name,first_publish_year,cover_i');
+    if(!res.ok) return { ok: false, items: [] };
     const data = await res.json();
-    if(!data || !Array.isArray(data.docs)) return undefined;
-    const coverId = data.docs[0] && data.docs[0].cover_i;
-    return (Number.isInteger(coverId) && coverId > 0) ? `https://covers.openlibrary.org/b/id/${coverId}-M.jpg` : null;
+    if(!data || !Array.isArray(data.docs)) return { ok: false, items: [] };
+    const items = [];
+    for(const d of data.docs){
+      if(!d || !Number.isInteger(d.cover_i) || d.cover_i <= 0) continue;
+      items.push({
+        url: 'https://covers.openlibrary.org/b/id/' + d.cover_i + '-M.jpg',
+        title: String(d.title || ''),
+        author: Array.isArray(d.author_name) && d.author_name.length ? String(d.author_name[0]) : '',
+        year: Number.isInteger(d.first_publish_year) ? d.first_publish_year : null
+      });
+    }
+    return { ok: true, items };
   }catch(e){
-    return undefined;
+    return { ok: false, items: [] };
   }
 }
+async function lookUpCover(title){
+  const r = await searchOpenLibrary(title, 5);     // the first of the top 5 matches that has a cover
+  if(!r.ok) return undefined;
+  return r.items.length ? r.items[0].url : false;
+}
 function saveCover(key, value){
-  // Adds just this one title to the newest saved list. Never replaces a cover that is already saved.
+  // Automatic answers only fill in titles that have no answer yet - never a saved cover or a "No cover" choice.
   return db.ref('covers').transaction(raw => {
     const all = parseCovers(raw);
     const cur = all[key];
-    if(isCoverUrl(cur)) return;                      // already has a cover: leave it alone
-    if(cur === null && value === null) return;       // already known to have none
+    if(isCoverUrl(cur) || cur === false) return;
     all[key] = value;
     return JSON.stringify(all);
   });
 }
+function chooseCover(key, value){
+  // A person's choice always wins (and the automatic search will leave it alone from then on).
+  return db.ref('covers').transaction(raw => {
+    const all = parseCovers(raw);
+    all[key] = value;
+    return JSON.stringify(all);
+  });
+}
+// Covers are shared by title. The owner can change any of them; everyone else, the ones for books on their own shelf.
+function canChangeCover(key){
+  if(!currentUser) return false;
+  return isOwner() || books.some(b => b.uid === currentUser.uid && normTitle(b.title) === key);
+}
+
+/* ---------- Pick-a-cover ---------- */
+let pickerKey = null;
+let pickerSearchId = 0;
+function titleForKey(key){ const b = books.find(x => normTitle(x.title) === key); return b ? b.title : key; }
+function openCoverPicker(key){
+  if(!db || !key || !canChangeCover(key)) return;
+  pickerKey = key;
+  const title = titleForKey(key);
+  document.getElementById('pickerFor').textContent = 'For “' + title + '”. The cover you pick shows for everyone who has this book.';
+  document.getElementById('pickerQuery').value = title;
+  document.getElementById('coverPicker').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+  runPickerSearch(title);
+}
+function closeCoverPicker(){
+  pickerKey = null;
+  pickerSearchId++;                                   // ignore any search still on its way
+  document.getElementById('coverPicker').style.display = 'none';
+  document.getElementById('pickerGrid').innerHTML = '';
+  document.getElementById('pickerMsg').textContent = '';
+  document.body.style.overflow = '';
+}
+async function runPickerSearch(query){
+  const q = String(query == null ? '' : query).trim();
+  const msg = document.getElementById('pickerMsg');
+  const grid = document.getElementById('pickerGrid');
+  if(!q){ msg.textContent = 'Type a title, series or author to search.'; return; }
+  const id = ++pickerSearchId;
+  msg.textContent = 'Searching…';
+  grid.innerHTML = '';
+  const r = await searchOpenLibrary(q, 24);
+  if(id !== pickerSearchId) return;                   // a newer search (or closing the picker) replaced this one
+  if(!r.ok){ msg.textContent = "Couldn't reach the cover search. Check your connection and try again."; return; }
+  const seen = new Set();
+  const items = r.items.filter(it => !seen.has(it.url) && seen.add(it.url)).slice(0, 18);
+  if(!items.length){ msg.textContent = 'No covers found. Try the published title (for example “Prince of the Elves”) or the author’s name.'; return; }
+  msg.textContent = 'Tap the right cover.';
+  const current = covers[pickerKey];
+  grid.innerHTML = items.map(it => `
+    <button class="picker-tile${it.url === current ? ' current' : ''}" data-url="${escapeHtml(it.url)}">
+      <img src="${escapeHtml(it.url)}" alt="" loading="lazy">
+      <div class="pt-title">${escapeHtml(it.title)}</div>
+      <div class="pt-meta">${escapeHtml([it.author, it.year].filter(Boolean).join(' · '))}</div>
+    </button>`).join('');
+  grid.querySelectorAll('img').forEach(img => img.addEventListener('error', () => { const t = img.closest('.picker-tile'); if(t) t.remove(); }));
+}
+async function pickCover(value){
+  const key = pickerKey;
+  if(!key || !canChangeCover(key)) return;
+  if(value !== false && !isCoverUrl(value)) return;
+  const msg = document.getElementById('pickerMsg');
+  msg.textContent = 'Saving…';
+  try{
+    await chooseCover(key, value);
+    if(pickerKey === key) closeCoverPicker();
+  }catch(e){
+    msg.textContent = "Couldn't save. Check your connection and try again.";
+  }
+}
+document.getElementById('pickerGrid').addEventListener('click', e => { const t = e.target.closest('.picker-tile'); if(t) pickCover(t.dataset.url); });
+document.getElementById('pickerGo').addEventListener('click', () => runPickerSearch(document.getElementById('pickerQuery').value));
+document.getElementById('pickerQuery').addEventListener('keydown', e => { if(e.key === 'Enter'){ e.preventDefault(); runPickerSearch(e.target.value); } });
+document.getElementById('pickerNone').addEventListener('click', () => pickCover(false));
+document.getElementById('pickerCancel').addEventListener('click', closeCoverPicker);
+document.getElementById('pickerClose').addEventListener('click', closeCoverPicker);
+document.getElementById('coverPicker').addEventListener('click', e => { if(e.target.id === 'coverPicker') closeCoverPicker(); });
+document.addEventListener('keydown', e => { if(e.key === 'Escape' && pickerKey !== null) closeCoverPicker(); });
+document.getElementById('shelves').addEventListener('click', e => { const sp = e.target.closest('.spine.can-pick'); if(sp) openCoverPicker(sp.dataset.key); });
 
 function todayStr(){
   const d = new Date();
@@ -1232,6 +1385,10 @@ function monthFinishedByPerson(){
 function render(prevIds){
   const grouped = byPerson();
   const uids = Object.keys(grouped);
+  // who may change which covers: the owner, or anyone who has that title on their own shelf
+  const ownerNow = isOwner();
+  const myTitleKeys = new Set(currentUser ? books.filter(b => b.uid === currentUser.uid).map(b => normTitle(b.title)) : []);
+  const canPick = key => !!currentUser && (ownerNow || myTitleKeys.has(key));
   const finishedCount = books.filter(b=>b.finished).length;
   const totalPagesRead = books.reduce((s,b)=>s+b.pagesRead,0);
 
@@ -1387,12 +1544,14 @@ function render(prevIds){
       const spines = list.map(b=>{
         const basis = b.totalPages || b.pagesRead;
         const h = Math.max(34, Math.min(72, 30 + basis/12));
-        const coverUrl = covers[normTitle(b.title)];
+        const key = normTitle(b.title);
+        const coverUrl = covers[key];
+        const pick = canPick(key) ? ' can-pick' : '';
         const label = `${escapeHtml(b.title)} — ${b.pagesRead}${b.totalPages?'/'+b.totalPages:''}pg${b.finished?' (finished)':' (reading)'}`;
         if(isCoverUrl(coverUrl)){
-          return `<div class="spine cover-spine ${b.finished?'':'reading'}" style="height:${h}px;" title="${label}"><img src="${escapeHtml(coverUrl)}" alt="${escapeHtml(b.title)}"></div>`;
+          return `<div class="spine cover-spine ${b.finished?'':'reading'}${pick}" data-key="${escapeHtml(key)}" style="height:${h}px;" title="${label}"><img src="${escapeHtml(coverUrl)}" alt="${escapeHtml(b.title)}"></div>`;
         }
-        return `<div class="spine ${b.finished?'':'reading'}" style="height:${h}px;background:${colorFor(b.title)}" title="${label}">
+        return `<div class="spine ${b.finished?'':'reading'}${pick}" data-key="${escapeHtml(key)}" style="height:${h}px;background:${colorFor(b.title)}" title="${label}">
           <div class="spine-title">${escapeHtml(b.title.length>18?b.title.slice(0,18)+'…':b.title)}</div>
         </div>`;
       }).join('');
@@ -1444,6 +1603,7 @@ function render(prevIds){
         </div>
         <div class="manage-actions">
           ${b.uid === (currentUser && currentUser.uid) ? `<button class="btn-edit" data-id="${escapeHtml(b.id)}">Edit</button>` : ''}
+          ${canPick(normTitle(b.title)) ? `<button class="btn-cover" data-key="${escapeHtml(normTitle(b.title))}">Cover</button>` : ''}
           ${(b.uid === (currentUser && currentUser.uid) || isOwner()) ? `<button class="btn-delete" data-id="${escapeHtml(b.id)}">Delete</button>` : ''}
         </div>
       </div>`).join('');
@@ -1461,6 +1621,9 @@ function render(prevIds){
         document.getElementById('msg').style.color = 'var(--sage)';
         document.getElementById('msg').textContent = 'Editing — adjust the details and hit Update.';
       });
+    });
+    manageEl.querySelectorAll('.btn-cover').forEach(btn=>{
+      btn.addEventListener('click', ()=> openCoverPicker(btn.dataset.key));
     });
     manageEl.querySelectorAll('.btn-delete').forEach(btn=>{
       btn.addEventListener('click', async ()=>{
@@ -1911,6 +2074,7 @@ function detachDataListeners(){ listenerRefs.forEach(r => r.off()); listenerRefs
 function clearLocalData(){
   books = []; profiles = {}; stakes = []; covers = {}; streaks = {}; history = []; editingId = null;
   coversLoaded = false; coverQueue.length = 0;
+  if(pickerKey !== null) closeCoverPicker();
   setEditingBanner();
 }
 function isPermissionDenied(err){ return /permission[_ ]denied/i.test(String((err && (err.code || err.message)) || '')); }
